@@ -158,5 +158,19 @@ CTFPROJECT/
 ├── pyproject.toml                   # Project packaging & dependency specs
 ├── setup.sh                         # Automated environment setup
 ├── Makefile                         # Developer command shortcuts
+├── CONTRIBUTING.md                  # Panduan kontribusi & alur kerja Git
+├── PANDUAN_KOLABORASI.md            # Panduan tim CTF & operator (Human-in-the-Loop)
+├── CODE_OF_CONDUCT.md               # Kode etik kolaborasi & etika keamanan
 └── README.md
 ```
+
+---
+
+## 🤝 Kolaborasi Git & Panduan Tim (Bahasa Indonesia)
+
+Proyek ini telah dilengkapi dengan dokumentasi standar kolaborasi tim CTF dan open-source dalam Bahasa Indonesia:
+- 📖 **[CONTRIBUTING.md](file:///home/kali/Project/CTFPROJECT/CONTRIBUTING.md)**: Panduan alur branching Git, standar Conventional Commits, dan tata cara pembuatan Pull Request.
+- 🛡️ **[PANDUAN_KOLABORASI.md](file:///home/kali/Project/CTFPROJECT/PANDUAN_KOLABORASI.md)**: Panduan operasional live CTF tim manusia bersama agen AI menggunakan CLI `ctf-msg` dan koordinasi real-time.
+- 📜 **[CODE_OF_CONDUCT.md](file:///home/kali/Project/CTFPROJECT/CODE_OF_CONDUCT.md)**: Kode etik komunitas dan etika keamanan siber.
+- 📋 **[.github/](file:///home/kali/Project/CTFPROJECT/.github/)**: Template Pull Request dan Issue Tracker terstruktur untuk GitHub.
+
