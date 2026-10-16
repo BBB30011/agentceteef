@@ -11,9 +11,17 @@ help:
 	@echo "  make test           - Run pytest test suite"
 	@echo "  make lint           - Run ruff linter check"
 	@echo "  make build-sandbox  - Build Docker ctf-sandbox image"
+	@echo "  make install-plugin - Install Agent CeTeEf as a global Antigravity plugin"
+	@echo "  make uninstall-plugin - Uninstall Agent CeTeEf from Antigravity"
 	@echo "  make report         - Show solve statistics from SQLite state DB"
 	@echo "  make report-html    - Generate standalone dark mode HTML report"
 	@echo "  make clean          - Clean temporary caches and logs"
+
+install-plugin:
+	./install-plugin.sh
+
+uninstall-plugin:
+	./uninstall-plugin.sh
 
 run:
 	./run.sh

@@ -201,6 +201,32 @@ File **`ctf_report.html`** akan dibuat. Buka file tersebut dengan peramban web (
 
 ---
 
+### 🔌 Langkah 9: Menggunakan Sebagai Plugin Resmi Google Antigravity
+
+Selain dijalankan secara mandiri (*standalone*), **Agent CeTeEf** dapat dipasang sebagai **Plugin Resmi Antigravity (`agy`)** pada sistem Linux Anda:
+
+```bash
+# Instal plugin ke konfigurasi global Antigravity (~/.gemini/config/plugins/agentceteef)
+./install-plugin.sh
+# Atau menggunakan make:
+make install-plugin
+```
+
+**Keuntungan Setelah Terpasang sebagai Plugin:**
+- **Skill `agentceteef` Aktif Global**: Saat Anda berinteraksi dengan AI Antigravity di terminal mana pun, Antigravity langsung memiliki pengetahuan dan peralatan untuk menyelesaikan tantangan CTF.
+- **Contoh Interaksi di Chat / Terminal Antigravity**:
+  - *"Tolong analisis soal CTF di folder ./challenges/crypto_cascade menggunakan skill agentceteef"*
+  - *"Jalankan multi-layer cascade auto decode pada string ini..."*
+  - *"Lakukan brute force single-byte XOR pada ciphertext ini..."*
+
+Untuk mencopot plugin kapan saja:
+```bash
+make uninstall-plugin
+# Atau: ./uninstall-plugin.sh
+```
+
+---
+
 ## 📋 Tabel Perintah Penting (Cheat Sheet)
 
 Rangkuman seluruh perintah operasional yang sering digunakan:
@@ -216,6 +242,8 @@ Rangkuman seluruh perintah operasional yang sering digunakan:
 | `./run.sh report-html` | Mengekspor laporan kompetisi ke file `ctf_report.html`. |
 | `./run.sh test` | Menjalankan 26 unit & integration tests otomatis. |
 | `./run.sh lint` | Memeriksa format dan standar kode dengan Ruff. |
+| `make install-plugin` | Memasang Agent CeTeEf sebagai Plugin Antigravity global. |
+| `make uninstall-plugin` | Mencopot Agent CeTeEf dari konfigurasi plugin Antigravity. |
 | `make clean` | Membersihkan cache dan file temporary. |
 
 ---

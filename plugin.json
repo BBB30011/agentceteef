@@ -1,0 +1,12 @@
+{
+  "name": "agentceteef",
+  "version": "1.0.0",
+  "description": "Agent CeTeEf — Autonomous CTF Multi-Model Solver Swarm & Security Toolchain Plugin for Google Antigravity.",
+  "author": "BBB30011",
+  "repository": "https://github.com/BBB30011/agentceteef",
+  "homepage": "https://github.com/BBB30011/agentceteef#readme",
+  "license": "MIT",
+  "skills": [
+    "skills/agentceteef/SKILL.md"
+  ]
+}
