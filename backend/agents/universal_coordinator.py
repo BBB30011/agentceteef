@@ -119,6 +119,8 @@ class UniversalCoordinator:
         challenges_root: str = "challenges",
         no_submit: bool = False,
         msg_port: int = 0,
+        resume: bool = False,
+        state_mgr: Any = None,
     ) -> None:
         self.settings = settings
         self.model_spec = model_spec
@@ -126,6 +128,8 @@ class UniversalCoordinator:
         self.challenges_root = challenges_root
         self.no_submit = no_submit
         self.msg_port = msg_port
+        self.resume = resume
+        self.state_mgr = state_mgr
         self.agent = build_universal_coordinator_agent(model_spec, settings)
         self.model_settings = resolve_model_settings(model_spec)
         self.message_history: list[ModelMessage] = []
@@ -158,4 +162,11 @@ class UniversalCoordinator:
             except Exception as e:
                 logger.error("Coordinator turn error: %s", e, exc_info=True)
 
-        return await run_event_loop(deps, ctfd, cost_tracker, turn_fn=turn_fn)
+        return await run_event_loop(
+            deps,
+            ctfd,
+            cost_tracker,
+            turn_fn=turn_fn,
+            resume=self.resume,
+            state_mgr=self.state_mgr,
+        )

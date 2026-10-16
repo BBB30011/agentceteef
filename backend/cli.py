@@ -263,6 +263,8 @@ async def _run_coordinator(
             challenges_root=challenges_dir,
             no_submit=no_submit,
             msg_port=msg_port,
+            resume=resume,
+            state_mgr=state_mgr,
         )
         results = await coord.run()
 

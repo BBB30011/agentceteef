@@ -23,7 +23,7 @@ echo "[+] uv version: $(uv --version)"
 
 # 3. Setup virtualenv and dependencies
 echo "[*] Syncing dependencies with uv..."
-uv sync
+uv sync --offline 2>/dev/null || uv sync
 
 # 4. Copy .env if not exists
 if [ ! -f ".env" ]; then

@@ -72,6 +72,8 @@ async def run_event_loop(
     cost_tracker: CostTracker,
     turn_fn: TurnFn,
     status_interval: int = 60,
+    resume: bool = False,
+    state_mgr: Any = None,
 ) -> dict[str, Any]:
     """Run the shared coordinator event loop.
 
@@ -81,9 +83,16 @@ async def run_event_loop(
         cost_tracker: Cost tracker.
         turn_fn: Async function that sends a message to the coordinator LLM.
         status_interval: Seconds between status updates.
+        resume: Skip challenges already solved in state database.
+        state_mgr: Persistent StateManager instance.
     """
     poller = CTFdPoller(ctfd=ctfd, interval_s=5.0)
     await poller.start()
+
+    if resume and state_mgr:
+        solved_in_db = state_mgr.get_solved_names()
+        poller.known_solved.update(solved_in_db)
+        logger.info("Resumed from state DB: %d challenges already solved", len(solved_in_db))
 
     # Start operator message HTTP endpoint
     msg_server = await _start_msg_server(deps.operator_inbox, deps.msg_port)

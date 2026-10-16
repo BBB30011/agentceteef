@@ -134,11 +134,11 @@ class AntigravitySolver:
 
         cmd = [
             self._agy_bin,
-            "--print",
-            full_prompt,
             "--dangerously-skip-permissions",
             "--add-dir",
             self.sandbox.workspace_dir,
+            "--print",
+            full_prompt,
         ]
 
         try:
@@ -160,23 +160,45 @@ class AntigravitySolver:
 
             self.tracer.event("model_output", output=output_combined[:2000], step=self._step_count)
 
-            # Extract flag candidates
+            # Extract flag candidates from output
             candidates = extract_flag_candidates(output_combined)
+
+            # If no candidates in CLI output, also inspect workspace directory
+            if not candidates and getattr(self.sandbox, "workspace_dir", None):
+                from backend.tools.ctf_helpers import do_find_flags_in_workspace
+                found_flags_str = await do_find_flags_in_workspace(self.sandbox, self.sandbox.workspace_dir)
+                candidates = extract_flag_candidates(found_flags_str)
+
             for cand in candidates:
                 logger.info("[%s] Testing detected flag candidate: %s", self.agent_name, cand)
                 if self.submit_fn:
-                    display, is_confirmed = await self.submit_fn(cand)
+                    res = self.submit_fn(cand)
+                    if asyncio.iscoroutine(res):
+                        display, is_confirmed = await res
+                    else:
+                        display, is_confirmed = res
                     if is_confirmed:
                         self._confirmed_flag = cand
                         self.tracer.event("flag_confirmed", flag=cand, step=self._step_count)
                         return SolverResult(
                             flag=cand,
                             status=FLAG_FOUND,
-                            findings_summary=f"Flag confirmed: {cand}",
+                            findings_summary=f"Flag confirmed: {cand} ({display})",
                             step_count=self._step_count,
                             cost_usd=0.0,
                             log_path=self.tracer.path,
                         )
+                elif self.no_submit or not self.ctfd:
+                    self._confirmed_flag = cand
+                    self.tracer.event("flag_found_dry_run", flag=cand, step=self._step_count)
+                    return SolverResult(
+                        flag=cand,
+                        status=FLAG_FOUND,
+                        findings_summary=f"Flag candidate found (dry run): {cand}",
+                        step_count=self._step_count,
+                        cost_usd=0.0,
+                        log_path=self.tracer.path,
+                    )
 
             # If no confirmed flag yet, summarize findings
             summary = output_combined[:600].strip() or "No output from agy."

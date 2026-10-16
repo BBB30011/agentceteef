@@ -199,13 +199,18 @@ class ChallengeSwarm:
 
             self._submitted_flags.add(normalized)
 
-            from backend.tools.core import do_submit_flag
-            display, is_confirmed = await do_submit_flag(self.ctfd, self.meta.name, flag)
-            if is_confirmed:
+            if self.no_submit or self.ctfd is None:
+                display = f'FLAG CAPTURED (DRY RUN) — "{flag}" recorded (--no-submit active).'
+                is_confirmed = True
                 self.confirmed_flag = normalized
             else:
-                self._submit_count[model_spec] = wrong_count + 1
-                self._last_submit_time[model_spec] = time.monotonic()
+                from backend.tools.core import do_submit_flag
+                display, is_confirmed = await do_submit_flag(self.ctfd, self.meta.name, flag)
+                if is_confirmed:
+                    self.confirmed_flag = normalized
+                else:
+                    self._submit_count[model_spec] = wrong_count + 1
+                    self._last_submit_time[model_spec] = time.monotonic()
 
             # Record to persistent state database
             try:
