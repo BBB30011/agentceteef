@@ -68,7 +68,7 @@ def generate_html_report(state: StateManager) -> str:
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CTF Agent — Laporan Kompetisi</title>
+    <title>Agent CeTeEf — Laporan Kompetisi CTF</title>
     <style>
         :root {{
             --bg-dark: #0d1117;
@@ -190,8 +190,8 @@ def generate_html_report(state: StateManager) -> str:
     <div class="container">
         <header>
             <div>
-                <h1>🏆 CTF Agent — Laporan Kompetisi</h1>
-                <p style="color: var(--text-muted); margin: 5px 0 0 0;">Autonomous Security Solver Swarm Report</p>
+                <h1>⚡ Agent CeTeEf — Laporan Analisis Kompetisi</h1>
+                <p style="color: var(--text-muted); margin: 5px 0 0 0;">Autonomous CTF Multi-Model Solver Swarm & Security Engine</p>
             </div>
             <div style="color: var(--text-muted); font-size: 0.9rem;">
                 Digenerate: {time.strftime('%Y-%m-%d %H:%M:%S')}

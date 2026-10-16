@@ -84,7 +84,7 @@ def main(
     export_html: str | None,
     verbose: bool,
 ) -> None:
-    """CTF Agent — Multi-Model Solver Swarm for CTF Competitions."""
+    """Agent CeTeEf — Autonomous Multi-Model Solver Swarm for CTF Competitions."""
     _setup_logging(verbose)
 
     settings = Settings(sandbox_image=image, sandbox_mode=sandbox_mode)

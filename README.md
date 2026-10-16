@@ -5,7 +5,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python: 3.13+](https://img.shields.io/badge/Python-3.13%2B-blue.svg)](pyproject.toml)
-[![Tests: Passing](https://img.shields.io/badge/Tests-18%20passed-brightgreen.svg)](tests/)
+[![Tests: Passing](https://img.shields.io/badge/Tests-24%20passed-brightgreen.svg)](tests/)
 [![Code Style: Ruff](https://img.shields.io/badge/Code%20Style-Ruff-000000.svg)](pyproject.toml)
 
 **Agent CeTeEf** adalah framework otonom untuk kompetisi *Capture The Flag* (CTF) yang memadukan kekuatan berbagai model kecerdasan buatan (*multi-model swarm*) untuk menemukan kerentanan, merancang eksploitasi, dan merebut bendera (*flag*) secara paralel dan real-time.
@@ -17,16 +17,18 @@ Kini telah direfaktor dan diperkuat dalam repositori **Agent CeTeEf** dengan ars
 - ⚡ **Multi-Model Parallel Swarms**: Integrasi langsung dengan Google Gemini, OpenAI (GPT-4o, o3-mini), Anthropic (Claude 3.7 Sonnet), DeepSeek, Groq (Llama 3.3 70B), OpenRouter, Ollama/Local LLMs, AWS Bedrock, dan Azure OpenAI.
 - ⚡ **Streaming Output & Real-Time Early Exit**: Output terminal dibaca secara asinkron baris demi baris. Begitu pola flag ditemukan oleh regex, proses solver langsung dihentikan dan diverifikasi dalam hitungan detik tanpa perlu menunggu timeout.
 - 🧠 **Universal Coordinator**: Agen pengatur strategi otonom berbasis `pydantic-ai` yang memantau perkembangan tantangan, memberikan petunjuk teknis (*bump*), serta membagikan temuan kunci (*broadcast*) ke seluruh agent yang bekerja.
-- 🛠️ **Peralatan Khusus Analisis CTF**:
+- 🛠️ **Peralatan Khusus Analisis CTF Lengkap**:
   - `checksec`: Analisis mitigasi proteksi biner ELF (RELRO, Stack Canary, NX, PIE).
   - `decompile`: Dekompilasi & disassembli fungsi simbolis via Radare2 / Objdump.
-  - `auto_decode`: Dekode kaskade otomatis (Base64, Hex, Base32, Rot13, URL, Binary) sekali panggil.
+  - `auto_decode`: Dekode kaskade otomatis berlapis (*multi-layer cascade*: Base64, Hex, Base32, Rot13, URL, Binary).
+  - `single_byte_xor`: Brute force XOR 1-byte otomatis (0..255) untuk memecahkan ciphertext XOR klasik.
+  - `identify_hash`: Identifikasi format hash (MD5, SHA1, SHA256, bcrypt, NTLM) dan saran mode Hashcat/John.
   - `calculate_entropy`: Analisis Shannon entropy untuk mendeteksi payload terenkripsi/terkompresi.
   - `find_flags`: Pemindaian pola regex otomatis di seluruh file workspace.
 - 🖥️ **UI/UX Interaktif & Visual Memukau**:
-  - Peluncur satu-klik `./run.sh` dengan panduan terminal wizard interaktif.
+  - Peluncur satu-klik `./run.sh` dengan panduan terminal wizard interaktif dan shortcut perintah instan (`demo`, `tokenless`, `fast`, `smart`, `report-html`).
   - Banner perayaan penemuan bendera (*Flag Captured*) berwarna kontras dengan detail waktu dan model pemenang.
-  - Ekspor laporan analitik kompetisi berformat **Dark Mode HTML** mandiri (`make report-html`).
+  - Ekspor laporan analitik kompetisi berformat **Dark Mode HTML** mandiri (`make report-html` atau `./run.sh report-html`).
 - 🛡️ **Dual Execution Sandbox**: Berjalan aman di dalam kontainer Docker terisolasi atau di host lokal (Kali Linux) dengan process group isolation dan timeout otomatis.
 - 💾 **State Persistence SQLite**: Melacak seluruh tantangan, flag, riwayat submisi, dan durasi solve dengan dukungan `--resume` (melewati soal yang telah selesai) dan `--report`.
 
@@ -180,18 +182,23 @@ make lint
 
 ```text
 agentceteef/
+├── .github/                         # GitHub Actions CI workflow & Issue Templates
+│   ├── workflows/ci.yml             # Otomatisasi pengujian & linting CI
+│   ├── ISSUE_TEMPLATE/              # Template Bug Report & Usulan Fitur
+│   └── pull_request_template.md     # Template Pull Request terstruktur
 ├── backend/                         # Inti Autonomous Agent
 │   ├── agents/                      # Swarm, Solvers (Agy, Claude, Codex, Pydantic AI)
-│   ├── tools/                       # CTF Tools (Checksec, Disasm, Auto-Decode, Entropy)
+│   ├── tools/                       # CTF Tools (Checksec, Disasm, Auto-Decode, XOR, HashID, Entropy)
 │   ├── ui/                          # Terminal Dashboard, Menu Wizard, HTML Exporter
 │   ├── config.py / models.py        # Multi-provider routing & settings
 │   ├── sandbox.py / ctfd.py         # Dual Sandbox & CTFd client
 │   └── state.py / cli.py            # SQLite state & Rich CLI Dashboard
 ├── challenges/                      # Direktori tantangan CTF
+│   ├── README.md                    # Panduan format & penambahan tantangan
 │   ├── demo_sanity/                 # Contoh challenge verifikasi bawaan
-│   └── .gitkeep
+│   └── crypto_cascade/              # Contoh challenge kriptografi multi-layer
 ├── logs/                            # Direktori jejak log & audit (.gitkeep)
-├── tests/                           # 18 Unit & Integration tests (100% passing)
+├── tests/                           # 24 Unit & Integration tests (100% passing)
 │   └── fixtures/demo_sanity/        # Fixture pengujian otomatis
 ├── .env.example                     # Template konfigurasi kredensial
 ├── .gitignore                       # Aturan pengabaian file terlindungi
@@ -202,8 +209,8 @@ agentceteef/
 ├── PANDUAN_KOLABORASI.md            # Panduan operasional live CTF tim manusia
 ├── pyproject.toml                   # Konfigurasi dependensi & paket
 ├── README.md                        # Dokumentasi utama proyek
-├── run.sh                           # One-Click Interactive Launcher
-├── setup.sh                         # Skrip setup otomatis environment
+├── run.sh                           # Universal CLI Launcher (Interactive & Shortcuts)
+├── setup.sh                         # Skrip setup otomatis environment & diagnostic
 └── uv.lock                          # Dependency lockfile deterministik
 ```
 

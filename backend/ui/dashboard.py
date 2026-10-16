@@ -43,7 +43,7 @@ def print_welcome_banner(
 ) -> None:
     """Print an eye-catching terminal header for the CTF swarm session."""
     title_text = Text()
-    title_text.append("⚡ CTF AGENT SWARM — AUTONOMOUS SECURITY SOLVER ⚡\n", style="bold yellow")
+    title_text.append("⚡ AGENT CETEEF — AUTONOMOUS SECURITY SOLVER ⚡\n", style="bold yellow")
     title_text.append("Autonomous Multi-Model Reasoning Engine • Real-Time Flag Extraction", style="dim italic")
 
     info_table = Table(show_header=False, box=None, padding=(0, 2))

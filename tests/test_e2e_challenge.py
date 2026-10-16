@@ -38,3 +38,30 @@ async def test_demo_sanity_challenge_structure_and_flag_discovery():
 
     finally:
         await sandbox.stop()
+
+
+@pytest.mark.asyncio
+async def test_crypto_cascade_challenge():
+    cascade_dir = Path("challenges/crypto_cascade")
+    assert cascade_dir.exists()
+
+    meta = ChallengeMeta.from_yaml(cascade_dir / "metadata.yml")
+    assert meta.name == "crypto_cascade"
+    assert meta.category == "crypto"
+    assert meta.value == 100
+
+    sandbox = LocalSandbox(image="local", challenge_dir=str(cascade_dir))
+    await sandbox.start()
+
+    try:
+        content = await do_read_file(sandbox, "/challenge/distfiles/intercepted.txt")
+        assert "c3ludHtwbmZwbnFyX3poeWd2X3lubHJlX3FycGJxdmF0X3puZmdyZX0=" in content
+
+        # Run auto_decode on intercepted ciphertext
+        from backend.tools.ctf_helpers import do_auto_decode
+        decode_result = do_auto_decode("c3ludHtwbmZwbnFyX3poeWd2X3lubHJlX3FycGJxdmF0X3puZmdyZX0=")
+        assert "flag{cascade_multi_layer_decoding_master}" in decode_result
+        assert "base64 -> rot13" in decode_result
+    finally:
+        await sandbox.stop()
+

@@ -1,0 +1,12 @@
+name: crypto_cascade
+category: crypto
+value: 100
+description: |
+  A mysterious ciphertext was intercepted from an enemy transmission.
+  Can your swarm crack the multi-layer encoding and recover the hidden flag?
+tags:
+  - crypto
+  - multi-layer
+  - encoding
+hints:
+  - content: Check the layers of encoding in distfiles/intercepted.txt.

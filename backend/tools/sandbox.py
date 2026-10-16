@@ -121,3 +121,15 @@ async def calculate_entropy(ctx: RunContext[SolverDeps], data: str) -> str:
     return f"Entropy: {score} / 8.0 — {assessment}"
 
 
+async def single_byte_xor(ctx: RunContext[SolverDeps], data: str) -> str:
+    """Brute force single-byte XOR (0..255) on hex or ASCII ciphertext to recover flags or plaintext."""
+    from backend.tools.ctf_helpers import do_single_byte_xor
+    return do_single_byte_xor(data)
+
+
+async def identify_hash(ctx: RunContext[SolverDeps], hash_str: str) -> str:
+    """Identify hash algorithm (MD5, SHA1, SHA256, bcrypt, NTLM, etc.) and suggest cracking parameters."""
+    from backend.tools.ctf_helpers import do_identify_hash
+    return do_identify_hash(hash_str)
+
+

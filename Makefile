@@ -1,8 +1,9 @@
 .PHONY: all setup install test build-sandbox report clean help
 
 help:
-	@echo "CTF Agent Swarm Makefile"
+	@echo "⚡ Agent CeTeEf (agentceteef) Makefile"
 	@echo "  make run            - Run interactive CLI launcher wizard"
+	@echo "  make demo           - Solve built-in sanity demo challenge"
 	@echo "  make tokenless      - Run tokenless solver using Antigravity CLI"
 	@echo "  make fast           - Run high-throughput fast multi-model swarm"
 	@echo "  make setup          - Run setup script and prepare environment"
@@ -16,6 +17,9 @@ help:
 
 run:
 	./run.sh
+
+demo:
+	./run.sh demo
 
 tokenless:
 	uv run --offline ctf-solve --profile tokenless 2>/dev/null || uv run ctf-solve --profile tokenless

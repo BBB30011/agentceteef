@@ -12,9 +12,11 @@ logs/*
 ctf_report.html
 test_report.html
 
-# Challenge data (downloaded dynamically, keep demo sanity challenge)
+# Challenge data (downloaded dynamically, keep built-in demo challenges)
 challenges/*
 !challenges/demo_sanity/
+!challenges/crypto_cascade/
+!challenges/README.md
 !challenges/.gitkeep
 
 # Python & Virtualenv
