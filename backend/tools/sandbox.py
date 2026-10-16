@@ -163,4 +163,12 @@ async def extract_archive(ctx: RunContext[SolverDeps], archive_path: str, dest_d
     return await do_extract_archive(ctx.deps.sandbox, archive_path, dest_dir)
 
 
+async def auto_security_scan(ctx: RunContext[SolverDeps], target_path: str = "/challenge/distfiles") -> str:
+    """Run an automated end-to-end security reconnaissance scan on files/directories to uncover flags and mitigations."""
+    from backend.tools.auto_scanner import do_auto_security_scan
+    audit = await do_auto_security_scan(ctx.deps.sandbox, target_path)
+    return audit.to_markdown()
+
+
+
 

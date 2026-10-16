@@ -36,6 +36,20 @@ case "$cmd" in
         echo "[*] Menjalankan profil Smart / Deep Swarm..."
         uv run --offline ctf-solve --profile smart 2>/dev/null || uv run ctf-solve --profile smart
         ;;
+    "scan")
+        shift
+        target="${1:-./challenges/demo_sanity}"
+        echo "[*] Menjalankan Automated Security Recon pada '$target'..."
+        uv run --offline ctf-solve --scan "$target" 2>/dev/null || uv run ctf-solve --scan "$target"
+        ;;
+    "decode")
+        shift
+        uv run --offline ctf-solve --quick-decode "$*" 2>/dev/null || uv run ctf-solve --quick-decode "$*"
+        ;;
+    "hash")
+        shift
+        uv run --offline ctf-solve --quick-hash "$*" 2>/dev/null || uv run ctf-solve --quick-hash "$*"
+        ;;
     "report")
         uv run --offline ctf-solve --report 2>/dev/null || uv run ctf-solve --report
         ;;

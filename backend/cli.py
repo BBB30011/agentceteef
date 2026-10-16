@@ -63,6 +63,9 @@ def _setup_logging(verbose: bool = False) -> None:
 @click.option("--msg-port", default=0, type=int, help="Operator message port (0 = auto)")
 @click.option("--report", is_flag=True, help="Print solve report from state DB and exit")
 @click.option("--export-html", default=None, help="Export competition report to a standalone HTML file")
+@click.option("--scan", default=None, help="Run instant automated security recon scan on a challenge directory")
+@click.option("--quick-decode", default=None, help="Instantly auto-decode an encoded ciphertext from CLI")
+@click.option("--quick-hash", default=None, help="Instantly identify cryptographic hash type and parameters from CLI")
 @click.option("-v", "--verbose", is_flag=True, help="Verbose logging")
 def main(
     profile: str | None,
@@ -82,6 +85,9 @@ def main(
     msg_port: int,
     report: bool,
     export_html: str | None,
+    scan: str | None,
+    quick_decode: str | None,
+    quick_hash: str | None,
     verbose: bool,
 ) -> None:
     """Agent CeTeEf — Autonomous Multi-Model Solver Swarm for CTF Competitions."""
@@ -95,6 +101,49 @@ def main(
     settings.max_concurrent_challenges = max_challenges
 
     state_mgr = StateManager(settings.state_db_path)
+
+    if quick_decode:
+        from backend.tools.ctf_helpers import do_auto_decode
+
+        console.print(Panel(do_auto_decode(quick_decode), title="Quick Auto-Decoder", box=ROUNDED, border_style="green"))
+        return
+
+    if quick_hash:
+        from backend.tools.ctf_helpers import do_identify_hash
+
+        console.print(Panel(do_identify_hash(quick_hash), title="Hash Identification", box=ROUNDED, border_style="yellow"))
+        return
+
+    if scan:
+        from rich.markdown import Markdown
+
+        from backend.prompts import ChallengeMeta
+        from backend.sandbox import LocalSandbox
+        from backend.tools.auto_scanner import do_auto_security_scan
+
+        target_dir = Path(scan)
+        if not target_dir.exists():
+            console.print(f"[bold red]Target directory '{scan}' does not exist![/bold red]")
+            return
+
+        meta_path = target_dir / "metadata.yml"
+        meta = ChallengeMeta.from_yaml(meta_path) if meta_path.exists() else ChallengeMeta(name=target_dir.name)
+
+        async def _run_scan():
+            sb = LocalSandbox(image="local", challenge_dir=str(target_dir))
+            await sb.start()
+            try:
+                recon_path = str(target_dir / "distfiles") if (target_dir / "distfiles").exists() else str(target_dir)
+                return await do_auto_security_scan(sb, recon_path, meta.connection_info)
+            finally:
+                await sb.stop()
+
+        console.print(f"[bold cyan]🔍 Menjalankan Automated Security Recon pada:[/bold cyan] {target_dir}...")
+        audit = asyncio.run(_run_scan())
+        console.print(Panel(Markdown(audit.to_markdown()), title=f"Security Recon Dossier — {meta.name}", border_style="cyan", box=ROUNDED))
+        if audit.discovered_flags:
+            console.print(f"\n[bold green]🚩 INSTANT FLAG(S) REVEALED:[/bold green] [bold yellow]{', '.join(audit.discovered_flags)}[/bold yellow]\n")
+        return
 
     if export_html:
         out_path = export_report_to_file(state_mgr, export_html)

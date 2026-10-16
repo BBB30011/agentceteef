@@ -109,6 +109,47 @@ class AntigravitySolver:
             "Once you find the flag, output: FLAG: <flag_here>",
         ]
 
+        # Automated Security Triage & Recon Scan before running agy
+        from backend.tools.auto_scanner import do_auto_security_scan
+
+        recon_target = f"{self.sandbox.workspace_dir}/distfiles"
+        if not Path(recon_target).exists():
+            recon_target = self.sandbox.workspace_dir
+
+        audit = await do_auto_security_scan(self.sandbox, recon_target, self.meta.connection_info)
+
+        # Check if triage scan immediately uncovered the flag
+        if audit.discovered_flags:
+            for cand in audit.discovered_flags:
+                logger.info("[%s] Auto-recon flag discovered: %s", self.agent_name, cand)
+                if self.submit_fn:
+                    res = self.submit_fn(cand)
+                    display, is_confirmed = await res if asyncio.iscoroutine(res) else res
+                    if is_confirmed:
+                        self._confirmed_flag = cand
+                        self.tracer.event("flag_confirmed", flag=cand, step=self._step_count)
+                        return SolverResult(
+                            flag=cand,
+                            status=FLAG_FOUND,
+                            findings_summary=f"Flag confirmed via Automated Security Recon: {cand} ({display})",
+                            step_count=self._step_count,
+                            cost_usd=0.0,
+                            log_path=self.tracer.path,
+                        )
+                elif self.no_submit or not self.ctfd:
+                    self._confirmed_flag = cand
+                    self.tracer.event("flag_found_dry_run", flag=cand, step=self._step_count)
+                    return SolverResult(
+                        flag=cand,
+                        status=FLAG_FOUND,
+                        findings_summary=f"Flag found via Automated Security Recon: {cand}",
+                        step_count=self._step_count,
+                        cost_usd=0.0,
+                        log_path=self.tracer.path,
+                    )
+
+        prompt_parts.append(f"\n[AUTOMATED SECURITY RECON DOSSIER]:\n{audit.to_markdown()}")
+
         if self._bump_queue:
             bump_text = "\n".join(self._bump_queue)
             self._bump_queue.clear()

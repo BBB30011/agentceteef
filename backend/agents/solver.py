@@ -32,6 +32,7 @@ from backend.solver_base import CANCELLED, CORRECT_MARKERS, ERROR, FLAG_FOUND, G
 from backend.tools.flag import submit_flag
 from backend.tools.sandbox import (
     auto_decode,
+    auto_security_scan,
     bash,
     calculate_entropy,
     check_findings,
@@ -127,6 +128,7 @@ def _build_toolset(deps: SolverDeps) -> FunctionToolset[SolverDeps]:
         extract_archive,
         jwt_decode,
         rot_bruteforce,
+        auto_security_scan,
         find_flags,
         web_fetch,
         webhook_create,
@@ -208,6 +210,21 @@ class Solver:
             container_arch=container_arch,
         )
 
+        # Automated Security Triage & Reconnaissance Scan
+        from backend.tools.auto_scanner import do_auto_security_scan
+
+        audit = await do_auto_security_scan(self.sandbox, "/challenge/distfiles", self.meta.connection_info)
+        if audit.discovered_flags:
+            for fl in audit.discovered_flags:
+                if self.deps.no_submit:
+                    self._flag = fl
+                    self._confirmed = True
+                    self._findings = f"Flag discovered directly via Automated Security Recon: {fl}"
+                    break
+
+        if not self._confirmed and audit.raw_summary:
+            system_prompt = f"{system_prompt}\n\n[AUTOMATED SECURITY RECON DOSSIER]:\n{audit.to_markdown()}"
+
         model = resolve_model(self.model_spec, self.settings)
         model_settings = resolve_model_settings(self.model_spec)
         raw_toolset = _build_toolset(self.deps)
@@ -235,6 +252,9 @@ class Solver:
         if not self._agent:
             await self.start()
         assert self._agent is not None
+
+        if self._confirmed and self._flag:
+            return self._result(FLAG_FOUND)
 
         t0 = time.monotonic()
         try:

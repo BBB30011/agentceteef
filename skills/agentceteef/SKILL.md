@@ -28,7 +28,16 @@ Activate this skill when:
 
 Antigravity agents can invoke the built-in domain-specific Python helpers directly:
 
-### 1. Multi-Layer Cascade Auto-Decoder
+### 1. All-in-One Automated Security Recon & Vulnerability Audit
+Executes end-to-end automated triage (magic bytes, checksec ELF mitigations, archive extraction, crypto detection, strings, and network probe):
+```python
+from backend.tools.auto_scanner import do_auto_security_scan
+
+audit = await do_auto_security_scan(sandbox, "/challenge/distfiles", connection_info="...")
+print(audit.to_markdown())
+```
+
+### 2. Multi-Layer Cascade Auto-Decoder
 Tries single and multi-layer cascade decodings (e.g. `Base64 -> ROT13`, `Hex -> Base64`) and detects flag patterns automatically:
 ```python
 from backend.tools.ctf_helpers import do_auto_decode
@@ -37,7 +46,7 @@ result = do_auto_decode("<encoded_text>")
 print(result)
 ```
 
-### 2. Single-Byte XOR Brute Force (0..255)
+### 3. Single-Byte XOR Brute Force (0..255)
 Brute forces all 256 byte keys on raw strings or hex values to detect hidden flags or plain English text:
 ```python
 from backend.tools.ctf_helpers import do_single_byte_xor
@@ -46,7 +55,7 @@ result = do_single_byte_xor("<hex_or_string>")
 print(result)
 ```
 
-### 3. Hash Identification & Parameter Suggestion
+### 4. Hash Identification & Parameter Suggestion
 Identifies hash types based on length, prefix, and charset, and suggests Hashcat/John modes:
 ```python
 from backend.tools.ctf_helpers import do_identify_hash
@@ -55,7 +64,7 @@ result = do_identify_hash("<hash_candidate>")
 print(result)
 ```
 
-### 4. File Forensics & Magic Byte Inspection
+### 5. File Forensics & Magic Byte Inspection
 Inspects true file types, MIME types, and header bytes to reveal disguised file formats:
 ```python
 # In sandbox:
@@ -63,28 +72,28 @@ from backend.tools.ctf_helpers import do_file_info
 info = await do_file_info(sandbox, "<path_to_file>")
 ```
 
-### 5. Printable Strings Extraction with Regex Filter
+### 6. Printable Strings Extraction with Regex Filter
 Extracts printable strings from binaries and scans for flags:
 ```python
 from backend.tools.ctf_helpers import do_strings_search
 strings_out = await do_strings_search(sandbox, "<path_to_binary>", min_len=4, filter_pattern="flag|ctf")
 ```
 
-### 6. ROT / Caesar Cipher Brute-Force (1..25)
+### 7. ROT / Caesar Cipher Brute-Force (1..25)
 Iterates through all 25 Caesar rotations and highlights flag matches:
 ```python
 from backend.tools.ctf_helpers import do_rot_bruteforce
 result = do_rot_bruteforce("<ciphertext>")
 ```
 
-### 7. JWT Inspection & Vulnerability Analyzer
+### 8. JWT Inspection & Vulnerability Analyzer
 Decodes JWT headers, payloads, and claims, detects `none` algorithm or symmetric HMAC vulnerabilities:
 ```python
 from backend.tools.ctf_helpers import do_jwt_decode
 result = do_jwt_decode("<jwt_token>")
 ```
 
-### 8. Multi-Format Archive Extractor & Flag Scanner
+### 9. Multi-Format Archive Extractor & Flag Scanner
 Unpacks `.zip`, `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.7z` and scans contents for flags:
 ```python
 from backend.tools.ctf_helpers import do_extract_archive

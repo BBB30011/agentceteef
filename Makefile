@@ -13,9 +13,13 @@ help:
 	@echo "  make build-sandbox  - Build Docker ctf-sandbox image"
 	@echo "  make install-plugin - Install Agent CeTeEf as a global Antigravity plugin"
 	@echo "  make uninstall-plugin - Uninstall Agent CeTeEf from Antigravity"
+	@echo "  make scan           - Run automated security recon scan (CHALLENGE=path)"
 	@echo "  make report         - Show solve statistics from SQLite state DB"
 	@echo "  make report-html    - Generate standalone dark mode HTML report"
 	@echo "  make clean          - Clean temporary caches and logs"
+
+scan:
+	./run.sh scan $(CHALLENGE)
 
 install-plugin:
 	./install-plugin.sh

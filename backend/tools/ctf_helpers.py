@@ -400,7 +400,9 @@ def do_rot_bruteforce(ciphertext: str) -> str:
             else:
                 rotated_chars.append(ch)
         candidate = "".join(rotated_chars)
-        flags = extract_flag_candidates(candidate)
+        raw_flags = extract_flag_candidates(candidate)
+        # Filter to recognizable flag prefixes so rotating an existing flag doesn't yield 25 false positive variants
+        flags = [f for f in raw_flags if f.lower().startswith(("flag{", "ctf{", "picoctf{", "sec{", "vuln{"))]
         results.append((shift, candidate, flags))
 
     # Check if any rotation revealed flags

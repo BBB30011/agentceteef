@@ -238,9 +238,12 @@ Rangkuman seluruh perintah operasional yang sering digunakan:
 | `./run.sh tokenless` | Menjalankan solver tanpa biaya API token ($0 Cost). |
 | `./run.sh fast` | Menjalankan swarm kecepatan tinggi (Gemini Flash + Groq Llama 3.3). |
 | `./run.sh smart` | Menjalankan swarm penalaran cerdas (Gemini 2.5 Pro + GPT-4o + Claude). |
+| `./run.sh scan [path]` | Menjalankan audit & intelijen keamanan otomatis (*zero-cost reconnaissance*). |
+| `./run.sh decode "<text>"` | Mendekode cepat ciphertext multi-lapis langsung dari terminal. |
+| `./run.sh hash "<hash>"` | Mengidentifikasi algoritma hash dan parameter Hashcat secara instan. |
 | `./run.sh report` | Menampilkan rekap ringkasan skor di terminal. |
 | `./run.sh report-html` | Mengekspor laporan kompetisi ke file `ctf_report.html`. |
-| `./run.sh test` | Menjalankan 31 unit & integration tests otomatis. |
+| `./run.sh test` | Menjalankan 35 unit & integration tests otomatis. |
 | `./run.sh lint` | Memeriksa format dan standar kode dengan Ruff. |
 | `make install-plugin` | Memasang Agent CeTeEf sebagai Plugin Antigravity global. |
 | `make uninstall-plugin` | Mencopot Agent CeTeEf dari konfigurasi plugin Antigravity. |
@@ -251,6 +254,7 @@ Rangkuman seluruh perintah operasional yang sering digunakan:
 ## 🛠️ Peralatan CTF Bawaan (Built-in Security Tools)
 
 Swarm AI dilengkapi peralatan analisis otomatis berkecepatan tinggi:
+- 🚀 **`auto_security_scan`**: Menjalankan rangkaian audit keamanan menyeluruh sekaligus (magic bytes, checksec ELF, ekstraksi arsip, rotasi ROT, deteksi token JWT, dan pemindaian port).
 - 🧩 **`auto_decode`**: Dekode kaskade berlapis (*multi-layer*: Base64 ➔ ROT13, Hex ➔ Base32, URL decode, dll).
 - 🔄 **`rot_bruteforce`**: Brute-force 25 rotasi sandi Caesar / ROT secara simultan dengan pendeteksian flag otomatis.
 - 🪪 **`jwt_decode`**: Membedah token JWT, mengekstrak claims tersembunyi, dan mendeteksi kerentanan algoritma (`none` algorithm, key confusion).
@@ -262,6 +266,26 @@ Swarm AI dilengkapi peralatan analisis otomatis berkecepatan tinggi:
 - 🛡️ **`checksec`**: Mengecek proteksi biner ELF (RELRO, Stack Canary, NX, PIE).
 - ⚙️ **`decompile`**: Membaca disassembly fungsi simbolis via Radare2 / Objdump.
 - 📈 **`calculate_entropy`**: Menghitung Shannon entropy untuk mendeteksi payload terenkripsi/terkompresi.
+
+---
+
+## 🔍 Audit & Intelijen Keamanan Otomatis (Automated Security Recon)
+
+Kini Anda dapat mengaudit dan membedah target tantangan apa pun tanpa harus menghabiskan token LLM! Cukup jalankan:
+
+```bash
+# Menjalankan pemindaian otomatis pada direktori tantangan
+./run.sh scan challenges/demo_sanity
+./run.sh scan challenges/forensics_disguise
+./run.sh scan challenges/rev_vault
+```
+
+Fitur ini secara otomatis:
+1. **Membedah Magic Bytes**: Mengidentifikasi format asli file dan mendeteksi penyamaran (misal file teks yang dinamai `.png`).
+2. **Audit Proteksi Biner ELF**: Mengecek status `checksec` (RELRO, Canary, NX, PIE) dan merekomendasikan vektor serangan (Ret2Win, Shellcoding, Info Leak).
+3. **Ekstraksi Teks & Deteksi Kriptografi**: Mengurai string, mendeteksi token JWT dan hash, serta melakukan dekode kaskade otomatis.
+4. **Pemeriksaan Port/Layanan Jaringan**: Melakukan probing HTTP header atau banner grabbing TCP jika target koneksi disediakan.
+5. **Instant Flag Capture**: Jika flag ditemukan secara langsung saat audit awal, tantangan dapat diselesaikan seketika (0 turn / 0 token).
 
 ---
 
