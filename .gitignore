@@ -26,3 +26,4 @@ workspace/
 codex-schema-*/
 .claude/scheduled_tasks.lock
 ctf-agent/
+*.sqlite3

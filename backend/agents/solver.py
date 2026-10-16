@@ -33,8 +33,12 @@ from backend.tools.flag import submit_flag
 from backend.tools.sandbox import (
     bash,
     check_findings,
+    checksec,
+    decompile,
+    find_flags,
     list_files,
     notify_coordinator,
+    quick_decode,
     read_file,
     web_fetch,
     webhook_create,
@@ -96,11 +100,26 @@ class TracingToolset(WrapperToolset[SolverDeps]):
 
 def _build_toolset(deps: SolverDeps) -> FunctionToolset[SolverDeps]:
     """Build the raw toolset for a solver agent."""
-    tools = [bash, read_file, write_file, list_files, submit_flag, web_fetch,
-             webhook_create, webhook_get_requests, check_findings, notify_coordinator]
+    tools = [
+        bash,
+        read_file,
+        write_file,
+        list_files,
+        submit_flag,
+        checksec,
+        decompile,
+        quick_decode,
+        find_flags,
+        web_fetch,
+        webhook_create,
+        webhook_get_requests,
+        check_findings,
+        notify_coordinator,
+    ]
     if deps.use_vision:
         tools.append(view_image)
     return FunctionToolset(tools=tools, max_retries=4)
+
 
 
 class Solver:
@@ -128,10 +147,12 @@ class Solver:
         self.cancel_event = cancel_event or asyncio.Event()
         self._owns_sandbox = owns_sandbox if owns_sandbox is not None else (sandbox is None)
 
+        fallback_allowed = getattr(settings, "sandbox_mode", "auto") != "docker"
         self.sandbox = sandbox or DockerSandbox(
             image=getattr(settings, "sandbox_image", "ctf-sandbox"),
             challenge_dir=challenge_dir,
             memory_limit=getattr(settings, "container_memory_limit", "4g"),
+            fallback_to_local=fallback_allowed,
         )
         self.use_vision = supports_vision(model_spec)
         self.deps = SolverDeps(
@@ -155,7 +176,7 @@ class Solver:
 
     async def start(self) -> None:
         """Start the sandbox and build the agent."""
-        if not self.sandbox._container:
+        if not getattr(self.sandbox, "_container", None):
             await self.sandbox.start()
         self.deps.workspace_dir = self.sandbox.workspace_dir
 

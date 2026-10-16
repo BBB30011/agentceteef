@@ -18,6 +18,8 @@ def _truncate(text: str, limit: int = MAX_OUTPUT) -> str:
 
 
 async def do_bash(sandbox, command: str, timeout_seconds: int = 60) -> str:
+    from backend.tools.ctf_helpers import extract_flag_candidates
+
     result = await sandbox.exec(command, timeout_s=timeout_seconds)
     parts: list[str] = []
     if result.stdout:
@@ -27,7 +29,15 @@ async def do_bash(sandbox, command: str, timeout_seconds: int = 60) -> str:
     if result.exit_code != 0:
         parts.append(f"[exit {result.exit_code}]")
     out = "\n".join(parts).strip() or "(no output)"
+
+    # Auto-detect potential CTF flags in the output
+    flags = extract_flag_candidates(out)
+    if flags:
+        flag_banner = "\n\n🚩 [POTENTIAL FLAG DETECTED]: " + ", ".join(flags) + " -> Verify immediately with submit_flag!"
+        out = out + flag_banner
+
     return _truncate(out)
+
 
 
 async def do_read_file(sandbox, path: str) -> str:

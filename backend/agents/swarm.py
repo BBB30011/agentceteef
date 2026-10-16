@@ -189,7 +189,30 @@ class ChallengeSwarm:
             else:
                 self._submit_count[model_spec] = wrong_count + 1
                 self._last_submit_time[model_spec] = time.monotonic()
+
+            # Record to persistent state database
+            try:
+                from backend.state import StateManager
+                db_path = getattr(self.settings, "state_db_path", "ctf_state.sqlite3")
+                state = StateManager(db_path)
+                state.record_submission(
+                    challenge_name=self.meta.name,
+                    flag=normalized,
+                    status="correct" if is_confirmed else "incorrect",
+                    response=display,
+                    model_spec=model_spec,
+                )
+                if is_confirmed:
+                    state.mark_solved(
+                        name=self.meta.name,
+                        flag=normalized,
+                        winner_model=model_spec,
+                    )
+            except Exception as e:
+                logger.warning("State recording failed: %s", e)
+
             return display, is_confirmed
+
 
     async def _run_solver(self, model_spec: str) -> SolverResult | None:
         solver = self._create_solver(model_spec)

@@ -1,152 +1,162 @@
-# CTF Agent
+# CTF Agent Swarm — High-Performance Autonomous CTF Framework
 
-Autonomous CTF (Capture The Flag) solver that races multiple AI models against challenges in parallel. Built in a weekend, we used it to solve all 52/52 challenges and win **1st place at BSidesSF 2026 CTF**.
+Autonomous CTF (Capture The Flag) solver framework that races multi-model AI agent swarms in parallel to discover vulnerabilities, exploit targets, and capture flags.
 
-Built by [Veria Labs](https://verialabs.com), founded by members of [.;,;.](https://ctftime.org/team/222911) (smiley), the [#1 US CTF team on CTFTime in 2024 and 2025](https://ctftime.org/stats/2024/US). We build AI agents that find and exploit real security vulnerabilities for large enterprises.
+Originally designed by [Veria Labs](https://verialabs.com) (members of smiley, #1 US CTF team on CTFTime) and victorious at **BSidesSF 2026 CTF (52/52 challenges, 1st place)**.
 
-## Results
+Now refactored and reinforced in **CTFPROJECT** with an enterprise-grade modular foundation:
+- **Universal Multi-Provider Support**: Direct native integration with Google Gemini, OpenAI, Anthropic, DeepSeek, Groq, OpenRouter, Ollama/Local LLMs, AWS Bedrock, Azure OpenAI, Claude SDK, and Codex.
+- **Universal Coordinator**: Autonomous competition strategist built with `pydantic-ai` that can run on any LLM.
+- **Dual Execution Engine (Docker & Host Sandbox)**: Run in hardened Docker containers or locally on Kali Linux with process group isolation and automatic fallback.
+- **Domain-Specific CTF Tooling**: Built-in automated binary mitigation checking (`checksec`), decompilation/disassembly (`radare2`/`objdump`), quick multi-format decoding (Base64/Hex/Rot13/URL/Binary), and automated flag candidate regex extraction.
+- **Persistent SQLite Competition State**: Track all challenges, flags, timestamps, and model performances across restarts with `--resume` and instant Markdown reporting (`--report`).
+- **Full Compatibility**: Python >= 3.13 support, modern `pydantic-ai` v2.57+ models, `uv` integration, and comprehensive test suite (`pytest`).
 
-| Competition | Challenges Solved | Result |
-|-------------|:-:|--------|
-| **BSidesSF 2026** | 52/52 (100%) | **1st place ($1,500)** |
+---
 
-The agent solves challenges across all categories — pwn, rev, crypto, forensics, web, and misc.
-
-## How It Works
-
-A **coordinator** LLM manages the competition while **solver swarms** attack individual challenges. Each swarm runs multiple models simultaneously — the first to find the flag wins.
+## Architecture Overview
 
 ```
-                        +-----------------+
-                        |  CTFd Platform  |
-                        +--------+--------+
-                                 |
-                        +--------v--------+
-                        |  Poller (5s)    |
-                        +--------+--------+
-                                 |
-                        +--------v--------+
-                        | Coordinator LLM |
-                        | (Claude/Codex)  |
-                        +--------+--------+
-                                 |
-              +------------------+------------------+
-              |                  |                  |
-     +--------v--------+ +------v---------+ +------v---------+
-     | Swarm:          | | Swarm:         | | Swarm:         |
-     | challenge-1     | | challenge-2    | | challenge-N    |
-     |                 | |                | |                |
-     |  Opus (med)     | |  Opus (med)    | |                |
-     |  Opus (max)     | |  Opus (max)    | |     ...        |
-     |  GPT-5.4        | |  GPT-5.4       | |                |
-     |  GPT-5.4-mini   | |  GPT-5.4-mini  | |                |
-     |  GPT-5.3-codex  | |  GPT-5.3-codex | |                |
-     +--------+--------+ +--------+-------+ +----------------+
-              |                    |
-     +--------v--------+  +-------v--------+
-     | Docker Sandbox  |  | Docker Sandbox |
-     | (isolated)      |  | (isolated)     |
-     |                 |  |                |
-     | pwntools, r2,   |  | pwntools, r2,  |
-     | gdb, python...  |  | gdb, python... |
-     +-----------------+  +----------------+
+                         +-----------------------+
+                         |     CTFd Platform     |
+                         +-----------+-----------+
+                                     |
+                         +-----------v-----------+
+                         |      Poller (5s)      |
+                         +-----------+-----------+
+                                     |
+                         +-----------v-----------+
+                         |   Coordinator Agent   |
+                         |  (Gemini/Claude/GPT)  |
+                         +-----------+-----------+
+                                     |
+               +---------------------+---------------------+
+               |                     |                     |
+      +--------v--------+   +--------v--------+   +--------v--------+
+      | Swarm:          |   | Swarm:          |   | Swarm:          |
+      | crypto-101      |   | pwn-bof         |   | web-injection   |
+      |                 |   |                 |   |                 |
+      |  Gemini 2.5 Pro |   |  Gemini 2.5 Pro |   |       ...       |
+      |  GPT-4o         |   |  GPT-4o         |   |                 |
+      |  Claude 3.7     |   |  Claude 3.7     |   |                 |
+      |  DeepSeek Chat  |   |  DeepSeek Chat  |   |                 |
+      +--------+--------+   +--------+--------+   +-----------------+
+               |                     |
+      +--------v--------+   +--------v--------+
+      | Sandbox Backend |   | Sandbox Backend |
+      | (Docker / Local)|   | (Docker / Local)|
+      |                 |   |                 |
+      | pwntools, r2,   |   | pwntools, r2,   |
+      | gdb, python...  |   | gdb, python...  |
+      +-----------------+   +-----------------+
 ```
 
-Each solver runs in an isolated Docker container with CTF tools pre-installed. Solvers never give up — they keep trying different approaches until the flag is found.
+---
 
 ## Quick Start
 
+### 1. One-Command Setup
 ```bash
-# Install
-uv sync
+./setup.sh
+# or: make setup
+```
 
-# Build sandbox image
-docker build -f sandbox/Dockerfile.sandbox -t ctf-sandbox .
+### 2. Configure Credentials
+Edit `.env` with your API key(s) and CTFd credentials:
+```env
+CTFD_URL=https://ctf.example.com
+CTFD_TOKEN=ctfd_your_token_here
 
-# Configure credentials
-cp .env.example .env
-# Edit .env with your API keys and CTFd token
+# Configure at least one provider:
+GEMINI_API_KEY=your_gemini_key
+OPENAI_API_KEY=your_openai_key
+ANTHROPIC_API_KEY=your_anthropic_key
+DEEPSEEK_API_KEY=your_deepseek_key
+```
 
-# Run against a CTFd instance
+### 3. Run the Agent
+
+#### Solve a single challenge directory:
+```bash
+uv run ctf-solve --challenge ./challenges/crypto-easy
+```
+
+#### Run autonomous competition coordinator:
+```bash
 uv run ctf-solve \
   --ctfd-url https://ctf.example.com \
   --ctfd-token ctfd_your_token \
   --challenges-dir challenges \
-  --max-challenges 10 \
-  -v
+  --max-challenges 5
 ```
 
-## Coordinator Backends
-
+#### Resume competition (skips previously solved challenges):
 ```bash
-# Claude SDK coordinator (default)
-uv run ctf-solve --coordinator claude ...
-
-# Codex coordinator (GPT-5.4 via JSON-RPC)
-uv run ctf-solve --coordinator codex ...
+uv run ctf-solve --resume
 ```
 
-## Solver Models
-
-Default model lineup (configurable in `backend/models.py`):
-
-| Model | Provider | Notes |
-|-------|----------|-------|
-| Claude Opus 4.6 (medium) | Claude SDK | Balanced speed/quality |
-| Claude Opus 4.6 (max) | Claude SDK | Deep reasoning |
-| GPT-5.4 | Codex | Best overall solver |
-| GPT-5.4-mini | Codex | Fast, good for easy challenges |
-| GPT-5.3-codex | Codex | Reasoning model (xhigh effort) |
-
-## Sandbox Tooling
-
-Each solver gets an isolated Docker container pre-loaded with CTF tools:
-
-| Category | Tools |
-|----------|-------|
-| **Binary** | radare2, GDB, objdump, binwalk, strings, readelf |
-| **Pwn** | pwntools, ROPgadget, angr, unicorn, capstone |
-| **Crypto** | SageMath, RsaCtfTool, z3, gmpy2, pycryptodome, cado-nfs |
-| **Forensics** | volatility3, Sleuthkit (mmls/fls/icat), foremost, exiftool |
-| **Stego** | steghide, stegseek, zsteg, ImageMagick, tesseract OCR |
-| **Web** | curl, nmap, Python requests, flask |
-| **Misc** | ffmpeg, sox, Pillow, numpy, scipy, PyTorch, podman |
-
-## Features
-
-- **Multi-model racing** — multiple AI models attack each challenge simultaneously
-- **Auto-spawn** — new challenges detected and attacked automatically
-- **Coordinator LLM** — reads solver traces, crafts targeted technical guidance
-- **Cross-solver insights** — findings shared between models via message bus
-- **Docker sandboxes** — isolated containers with full CTF tooling
-- **Operator messaging** — send hints to running solvers mid-competition
-
-## Configuration
-
-Copy `.env.example` to `.env` and fill in your keys:
-
+#### View solve statistics & export report:
 ```bash
-cp .env.example .env
+uv run ctf-solve --report
 ```
 
-```env
-CTFD_URL=https://ctf.example.com
-CTFD_TOKEN=ctfd_your_token
-ANTHROPIC_API_KEY=sk-ant-...
-OPENAI_API_KEY=sk-...
-GEMINI_API_KEY=...
+---
+
+## Sandbox Modes
+
+The execution environment can be selected via `--sandbox-mode`:
+
+| Mode | Description |
+|------|-------------|
+| `auto` (Default) | Uses Docker container if available; seamlessly falls back to Local Sandbox on host |
+| `docker` | Requires Docker daemon and `ctf-sandbox` image |
+| `local` | Runs directly on Kali Linux with isolated temporary workspaces and process-group timeouts |
+
+To build the Docker sandbox image:
+```bash
+make build-sandbox
 ```
 
-All settings can also be passed as environment variables or CLI flags.
+---
 
-## Requirements
+## Running Tests
 
-- Python 3.14+
-- Docker
-- API keys for at least one provider (Anthropic, OpenAI, Google)
-- `codex` CLI (for Codex solver/coordinator)
-- `claude` CLI (bundled with claude-agent-sdk)
+Run the full pytest suite:
+```bash
+make test
+# or: uv run pytest -v
+```
 
-## Acknowledgements
+---
 
-- [es3n1n/Eruditus](https://github.com/es3n1n/Eruditus) — CTFd interaction and HTML helpers in `pull_challenges.py`
+## Project Structure
+
+```
+CTFPROJECT/
+├── backend/
+│   ├── agents/
+│   │   ├── universal_coordinator.py # Universal Pydantic AI coordinator
+│   │   ├── claude_coordinator.py    # Claude SDK coordinator
+│   │   ├── codex_coordinator.py     # Codex JSON-RPC coordinator
+│   │   ├── solver.py                # Multi-model Pydantic AI solver
+│   │   └── swarm.py                 # Swarm parallel racing engine
+│   ├── tools/
+│   │   ├── ctf_helpers.py           # Checksec, disasm, decode, flag detection
+│   │   ├── core.py                  # Bash, file I/O, web utilities
+│   │   ├── flag.py                  # CTFd flag verification & submission
+│   │   ├── sandbox.py               # Tool wrappers for agent invocation
+│   │   └── vision.py                # Multimodal visual analysis
+│   ├── models.py                    # Multi-provider model router & registry
+│   ├── sandbox.py                   # Docker & Local host sandbox backends
+│   ├── state.py                     # SQLite persistent competition state
+│   ├── ctfd.py                      # CTFd REST API client
+│   ├── poller.py                    # Live CTFd challenge event monitor
+│   ├── cost_tracker.py              # Token usage & cost calculations
+│   └── cli.py                       # Rich terminal CLI dashboard
+├── tests/                           # Pytest automated test suite
+├── sandbox/                         # Dockerfile and sandbox tool lists
+├── pyproject.toml                   # Project packaging & dependency specs
+├── setup.sh                         # Automated environment setup
+├── Makefile                         # Developer command shortcuts
+└── README.md
+```

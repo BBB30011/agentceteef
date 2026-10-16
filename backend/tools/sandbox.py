@@ -81,3 +81,28 @@ async def webhook_create(ctx: RunContext[SolverDeps]) -> str:
 async def webhook_get_requests(ctx: RunContext[SolverDeps], uuid: str) -> str:
     """Retrieve HTTP requests received by a webhook.site token."""
     return await do_webhook_get_requests(uuid)
+
+
+async def checksec(ctx: RunContext[SolverDeps], binary_path: str) -> str:
+    """Check binary security mitigations (RELRO, Stack Canary, NX, PIE) on an ELF file."""
+    from backend.tools.ctf_helpers import do_checksec
+    return await do_checksec(ctx.deps.sandbox, binary_path)
+
+
+async def decompile(ctx: RunContext[SolverDeps], binary_path: str, symbol: str = "main") -> str:
+    """Disassemble or decompile a target symbol in a binary using radare2 or objdump."""
+    from backend.tools.ctf_helpers import do_decompile
+    return await do_decompile(ctx.deps.sandbox, binary_path, symbol)
+
+
+async def quick_decode(ctx: RunContext[SolverDeps], text: str, operation: str) -> str:
+    """Quickly decode encoded text: 'base64', 'hex', 'rot13', 'url', 'binary'."""
+    from backend.tools.ctf_helpers import do_quick_decode
+    return do_quick_decode(text, operation)
+
+
+async def find_flags(ctx: RunContext[SolverDeps], path: str = "/challenge") -> str:
+    """Search for flag patterns (e.g. flag{...}, CTF{...}) across all files in workspace."""
+    from backend.tools.ctf_helpers import do_find_flags_in_workspace
+    return await do_find_flags_in_workspace(ctx.deps.sandbox, path)
+
