@@ -1,7 +1,7 @@
 [project]
 name = "ctf-agent"
 version = "0.2.0"
-description = "Autonomous CTF Solver Swarm — multi-model parallel agent framework"
+description = "Agent CeTeEf — High-Performance Autonomous CTF Multi-Model Solver Swarm"
 requires-python = ">=3.13"
 dependencies = [
     "pydantic-ai[bedrock]>=2.57.0",

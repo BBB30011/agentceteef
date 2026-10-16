@@ -63,7 +63,8 @@ class AntigravitySolver:
         self._bump_queue: list[str] = []
         self._step_count = 0
         self._confirmed_flag: str | None = None
-        self._agy_bin = shutil.which("agy") or "/home/kali/.local/bin/agy"
+        home_agy = str(Path.home() / ".local" / "bin" / "agy")
+        self._agy_bin = shutil.which("agy") or (home_agy if Path(home_agy).exists() else "agy")
 
     async def start(self) -> None:
         """Initialize the sandbox environment and verify agy CLI presence."""

@@ -1,77 +1,96 @@
-# CTF Agent Swarm — High-Performance Autonomous CTF Framework
+# ⚡ Agent CeTeEf (agentceteef)
 
-Autonomous CTF (Capture The Flag) solver framework that races multi-model AI agent swarms in parallel to discover vulnerabilities, exploit targets, and capture flags.
+> **Autonomous CTF Multi-Model Solver Swarm & Real-Time Security Reasoning Engine**  
+> 🔗 GitHub Repository: [BBB30011/agentceteef](https://github.com/BBB30011/agentceteef)
 
-Originally designed by [Veria Labs](https://verialabs.com) (members of smiley, #1 US CTF team on CTFTime) and victorious at **BSidesSF 2026 CTF (52/52 challenges, 1st place)**.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Python: 3.13+](https://img.shields.io/badge/Python-3.13%2B-blue.svg)](pyproject.toml)
+[![Tests: Passing](https://img.shields.io/badge/Tests-18%20passed-brightgreen.svg)](tests/)
+[![Code Style: Ruff](https://img.shields.io/badge/Code%20Style-Ruff-000000.svg)](pyproject.toml)
 
-Now refactored and reinforced in **CTFPROJECT** with an enterprise-grade modular foundation:
-- **Universal Multi-Provider Support**: Direct native integration with Google Gemini, OpenAI, Anthropic, DeepSeek, Groq, OpenRouter, Ollama/Local LLMs, AWS Bedrock, Azure OpenAI, Claude SDK, and Codex.
-- **Universal Coordinator**: Autonomous competition strategist built with `pydantic-ai` that can run on any LLM.
-- **Dual Execution Engine (Docker & Host Sandbox)**: Run in hardened Docker containers or locally on Kali Linux with process group isolation and automatic fallback.
-- **Domain-Specific CTF Tooling**: Built-in automated binary mitigation checking (`checksec`), decompilation/disassembly (`radare2`/`objdump`), quick multi-format decoding (Base64/Hex/Rot13/URL/Binary), and automated flag candidate regex extraction.
-- **Persistent SQLite Competition State**: Track all challenges, flags, timestamps, and model performances across restarts with `--resume` and instant Markdown reporting (`--report`).
-- **Full Compatibility**: Python >= 3.13 support, modern `pydantic-ai` v2.57+ models, `uv` integration, and comprehensive test suite (`pytest`).
+**Agent CeTeEf** adalah framework otonom untuk kompetisi *Capture The Flag* (CTF) yang memadukan kekuatan berbagai model kecerdasan buatan (*multi-model swarm*) untuk menemukan kerentanan, merancang eksploitasi, dan merebut bendera (*flag*) secara paralel dan real-time.
 
----
+Awalnya dirancang oleh [Veria Labs](https://verialabs.com) (anggota tim *smiley*, peringkat #1 tim CTF AS di CTFTime) dan menjuarai **BSidesSF 2026 CTF (52/52 tantangan solved, Juara 1)**.
 
-## Architecture Overview
-
-```
-                         +-----------------------+
-                         |     CTFd Platform     |
-                         +-----------+-----------+
-                                     |
-                         +-----------v-----------+
-                         |      Poller (5s)      |
-                         +-----------+-----------+
-                                     |
-                         +-----------v-----------+
-                         |   Coordinator Agent   |
-                         |  (Gemini/Claude/GPT)  |
-                         +-----------+-----------+
-                                     |
-               +---------------------+---------------------+
-               |                     |                     |
-      +--------v--------+   +--------v--------+   +--------v--------+
-      | Swarm:          |   | Swarm:          |   | Swarm:          |
-      | crypto-101      |   | pwn-bof         |   | web-injection   |
-      |                 |   |                 |   |                 |
-      |  Gemini 2.5 Pro |   |  Gemini 2.5 Pro |   |       ...       |
-      |  GPT-4o         |   |  GPT-4o         |   |                 |
-      |  Claude 3.7     |   |  Claude 3.7     |   |                 |
-      |  DeepSeek Chat  |   |  DeepSeek Chat  |   |                 |
-      +--------+--------+   +--------+--------+   +-----------------+
-               |                     |
-      +--------v--------+   +--------v--------+
-      | Sandbox Backend |   | Sandbox Backend |
-      | (Docker / Local)|   | (Docker / Local)|
-      |                 |   |                 |
-      | pwntools, r2,   |   | pwntools, r2,   |
-      | gdb, python...  |   | gdb, python...  |
-      +-----------------+   +-----------------+
-```
+Kini telah direfaktor dan diperkuat dalam repositori **Agent CeTeEf** dengan arsitektur modern, performa tinggi, dan kemudahan penggunaan:
+- 🚀 **Mode Tanpa Token (Antigravity CLI / `agy`)**: Dukungan eksekusi lokal tanpa biaya token API ($0 cost), offline-ready memanfaatkan toolchain host Kali Linux.
+- ⚡ **Multi-Model Parallel Swarms**: Integrasi langsung dengan Google Gemini, OpenAI (GPT-4o, o3-mini), Anthropic (Claude 3.7 Sonnet), DeepSeek, Groq (Llama 3.3 70B), OpenRouter, Ollama/Local LLMs, AWS Bedrock, dan Azure OpenAI.
+- ⚡ **Streaming Output & Real-Time Early Exit**: Output terminal dibaca secara asinkron baris demi baris. Begitu pola flag ditemukan oleh regex, proses solver langsung dihentikan dan diverifikasi dalam hitungan detik tanpa perlu menunggu timeout.
+- 🧠 **Universal Coordinator**: Agen pengatur strategi otonom berbasis `pydantic-ai` yang memantau perkembangan tantangan, memberikan petunjuk teknis (*bump*), serta membagikan temuan kunci (*broadcast*) ke seluruh agent yang bekerja.
+- 🛠️ **Peralatan Khusus Analisis CTF**:
+  - `checksec`: Analisis mitigasi proteksi biner ELF (RELRO, Stack Canary, NX, PIE).
+  - `decompile`: Dekompilasi & disassembli fungsi simbolis via Radare2 / Objdump.
+  - `auto_decode`: Dekode kaskade otomatis (Base64, Hex, Base32, Rot13, URL, Binary) sekali panggil.
+  - `calculate_entropy`: Analisis Shannon entropy untuk mendeteksi payload terenkripsi/terkompresi.
+  - `find_flags`: Pemindaian pola regex otomatis di seluruh file workspace.
+- 🖥️ **UI/UX Interaktif & Visual Memukau**:
+  - Peluncur satu-klik `./run.sh` dengan panduan terminal wizard interaktif.
+  - Banner perayaan penemuan bendera (*Flag Captured*) berwarna kontras dengan detail waktu dan model pemenang.
+  - Ekspor laporan analitik kompetisi berformat **Dark Mode HTML** mandiri (`make report-html`).
+- 🛡️ **Dual Execution Sandbox**: Berjalan aman di dalam kontainer Docker terisolasi atau di host lokal (Kali Linux) dengan process group isolation dan timeout otomatis.
+- 💾 **State Persistence SQLite**: Melacak seluruh tantangan, flag, riwayat submisi, dan durasi solve dengan dukungan `--resume` (melewati soal yang telah selesai) dan `--report`.
 
 ---
 
-## Quick Start — Super Mudah & Cepat
+## 🏛️ Arsitektur Sistem
+
+```
+                         +-----------------------------+
+                         |     Platform Target CTFd    |
+                         +--------------+--------------+
+                                        ▲
+                        Submit Flag (Dedup & Cooldown)
+                                        │
+                         +--------------+--------------+
+                         |     Live Poller Event Loop  |
+                         +--------------+--------------+
+                                        │
+                         +--------------v--------------+
+                         |   Universal Coordinator     |
+                         |  (Gemini / GPT / Claude)    |
+                         +--------------+--------------+
+                                        │
+             +--------------------------+--------------------------+
+             │                          │                          │
+    +--------v--------+        +--------v--------+        +--------v--------+
+    | Swarm: Pwn      |        | Swarm: Crypto   |        | Swarm: Web/Rev  |
+    |                 |        |                 |        |                 |
+    | Antigravity agy |        | Gemini 2.5 Pro  |        | GPT-4o          |
+    | Groq Llama 3.3  |        | Claude 3.7      |        | DeepSeek Chat   |
+    +--------+--------+        +--------+--------+        +--------+--------+
+             │                          │                          │
+             +--------------------------+--------------------------+
+                                        │
+                         +--------------v--------------+
+                         |       Sandbox Engine        |
+                         |   (Docker / Local Host)     |
+                         |                             |
+                         | pwntools, r2, gdb, checksec,|
+                         | python, curl, auto_decode   |
+                         +-----------------------------+
+```
+
+---
+
+## 🚀 Panduan Penggunaan Cepat (Quick Start)
 
 ### 1. One-Click Interactive Launcher (Rekomendasi)
 Cukup jalankan satu perintah ini, wizard interaktif akan memandu Anda:
 ```bash
 ./run.sh
 ```
-Atau via Makefile:
+Atau menggunakan Make:
 ```bash
 make run
 ```
 
 ### 2. Preset Profil Cepat (Tanpa Ribet Mengatur Flag)
-- **Mode Tanpa Token (Antigravity CLI / Gratis)**:
+- **Mode Tanpa Token (Antigravity CLI / $0 Token)**:
   ```bash
   make tokenless
   # atau: uv run ctf-solve --profile tokenless
   ```
-- **Mode Cepat (Throughput Tinggi)**:
+- **Mode Cepat (Throughput & Latensi Rendah)**:
   ```bash
   make fast
   # atau: uv run ctf-solve --profile fast
@@ -81,107 +100,125 @@ make run
   uv run ctf-solve --profile smart
   ```
 
-### 3. Pecahkan Satu Tantangan Tertentu
+### 3. Memecahkan Satu Tantangan Tertentu
 ```bash
+# Menyerang folder tantangan bawaan dalam mode dry-run:
 uv run ctf-solve --challenge ./challenges/demo_sanity --no-submit
 ```
 
-### 4. Laporan & Ekspor Visual (Dark Mode HTML)
+### 4. Laporan Kompetisi & Ekspor Visual (Dark Mode HTML)
 ```bash
-# Cetak di terminal:
+# Cetak ringkasan teks di terminal:
 make report
 
-# Ekspor ke file HTML interaktif siap buka di browser:
+# Ekspor ke file HTML siap buka di browser:
 make report-html
-# atau: uv run ctf-solve --export-html ctf_report.html
+# File 'ctf_report.html' akan dibuat otomatis!
 ```
 
 ---
 
-## Konfigurasi Kredensial (.env)
-Edit `.env` jika ingin menggunakan API keys atau menghubungkan ke live CTFd server:
+## ⚙️ Konfigurasi Kredensial (`.env`)
+
+Salin file contoh dan masukkan API key atau kredensial CTFd Anda:
+```bash
+cp .env.example .env
+```
+Isi konfigurasi pada file `.env`:
 ```env
+# Konfigurasi CTFd
 CTFD_URL=https://ctf.example.com
-CTFD_TOKEN=ctfd_your_token_here
+CTFD_TOKEN=ctfd_your_api_token_here
+CTFD_USER=admin
+CTFD_PASS=admin
 
-# Opsional: API keys untuk mode cloud multi-model:
-GEMINI_API_KEY=your_gemini_key
-OPENAI_API_KEY=your_openai_key
-ANTHROPIC_API_KEY=your_anthropic_key
-DEEPSEEK_API_KEY=your_deepseek_key
+# AI Model Keys (konfigurasi salah satu atau beberapa)
+GEMINI_API_KEY=
+OPENAI_API_KEY=
+ANTHROPIC_API_KEY=
+DEEPSEEK_API_KEY=
+GROQ_API_KEY=
+OPENROUTER_API_KEY=
+
+# Local / Ollama Endpoints
+OLLAMA_BASE_URL=http://localhost:11434/v1
 ```
 
 ---
 
-## Sandbox Modes
+## 🛡️ Mode Eksekusi Sandbox
 
-The execution environment can be selected via `--sandbox-mode`:
+Mode sandbox dapat diatur melalui flag `--sandbox-mode`:
 
-| Mode | Description |
-|------|-------------|
-| `auto` (Default) | Uses Docker container if available; seamlessly falls back to Local Sandbox on host |
-| `docker` | Requires Docker daemon and `ctf-sandbox` image |
-| `local` | Runs directly on Kali Linux with isolated temporary workspaces and process-group timeouts |
+| Mode | Deskripsi |
+|------|-----------|
+| `auto` (Default) | Otomatis mendeteksi Docker; jika Docker tidak aktif, otomatis beralih ke isolasi lokal tanpa gangguan. |
+| `docker` | Menjalankan seluruh tool dan exploit di dalam kontainer Docker terisolasi `ctf-sandbox`. |
+| `local` | Menjalankan langsung di Kali Linux dengan direktori sementara terisolasi dan pembatasan timeout grup proses. |
 
-To build the Docker sandbox image:
+Untuk membangun image Docker sandbox:
 ```bash
 make build-sandbox
 ```
 
 ---
 
-## Running Tests
+## 🧪 Pengujian Otomatis (Testing)
 
-Run the full pytest suite:
+Jalankan seluruh test suite unit dan integrasi:
 ```bash
 make test
-# or: uv run pytest -v
+```
+Jalankan linter kode:
+```bash
+make lint
 ```
 
 ---
 
-## Project Structure
+## 📁 Struktur Direktori Repositori
 
-```
-CTFPROJECT/
-├── backend/
-│   ├── agents/
-│   │   ├── universal_coordinator.py # Universal Pydantic AI coordinator
-│   │   ├── claude_coordinator.py    # Claude SDK coordinator
-│   │   ├── codex_coordinator.py     # Codex JSON-RPC coordinator
-│   │   ├── solver.py                # Multi-model Pydantic AI solver
-│   │   └── swarm.py                 # Swarm parallel racing engine
-│   ├── tools/
-│   │   ├── ctf_helpers.py           # Checksec, disasm, decode, flag detection
-│   │   ├── core.py                  # Bash, file I/O, web utilities
-│   │   ├── flag.py                  # CTFd flag verification & submission
-│   │   ├── sandbox.py               # Tool wrappers for agent invocation
-│   │   └── vision.py                # Multimodal visual analysis
-│   ├── models.py                    # Multi-provider model router & registry
-│   ├── sandbox.py                   # Docker & Local host sandbox backends
-│   ├── state.py                     # SQLite persistent competition state
-│   ├── ctfd.py                      # CTFd REST API client
-│   ├── poller.py                    # Live CTFd challenge event monitor
-│   ├── cost_tracker.py              # Token usage & cost calculations
-│   └── cli.py                       # Rich terminal CLI dashboard
-├── tests/                           # Pytest automated test suite
-├── sandbox/                         # Dockerfile and sandbox tool lists
-├── pyproject.toml                   # Project packaging & dependency specs
-├── setup.sh                         # Automated environment setup
-├── Makefile                         # Developer command shortcuts
+```text
+agentceteef/
+├── backend/                         # Inti Autonomous Agent
+│   ├── agents/                      # Swarm, Solvers (Agy, Claude, Codex, Pydantic AI)
+│   ├── tools/                       # CTF Tools (Checksec, Disasm, Auto-Decode, Entropy)
+│   ├── ui/                          # Terminal Dashboard, Menu Wizard, HTML Exporter
+│   ├── config.py / models.py        # Multi-provider routing & settings
+│   ├── sandbox.py / ctfd.py         # Dual Sandbox & CTFd client
+│   └── state.py / cli.py            # SQLite state & Rich CLI Dashboard
+├── challenges/                      # Direktori tantangan CTF
+│   ├── demo_sanity/                 # Contoh challenge verifikasi bawaan
+│   └── .gitkeep
+├── logs/                            # Direktori jejak log & audit (.gitkeep)
+├── tests/                           # 18 Unit & Integration tests (100% passing)
+│   └── fixtures/demo_sanity/        # Fixture pengujian otomatis
+├── .env.example                     # Template konfigurasi kredensial
+├── .gitignore                       # Aturan pengabaian file terlindungi
+├── CODE_OF_CONDUCT.md               # Kode etik komunitas tim CTF
 ├── CONTRIBUTING.md                  # Panduan kontribusi & alur kerja Git
-├── PANDUAN_KOLABORASI.md            # Panduan tim CTF & operator (Human-in-the-Loop)
-├── CODE_OF_CONDUCT.md               # Kode etik kolaborasi & etika keamanan
-└── README.md
+├── LICENSE                          # Lisensi proyek MIT
+├── Makefile                         # Shortcut perintah operasional
+├── PANDUAN_KOLABORASI.md            # Panduan operasional live CTF tim manusia
+├── pyproject.toml                   # Konfigurasi dependensi & paket
+├── README.md                        # Dokumentasi utama proyek
+├── run.sh                           # One-Click Interactive Launcher
+├── setup.sh                         # Skrip setup otomatis environment
+└── uv.lock                          # Dependency lockfile deterministik
 ```
 
 ---
 
-## 🤝 Kolaborasi Git & Panduan Tim (Bahasa Indonesia)
+## 🤝 Dokumentasi Tim & Kolaborasi (Bahasa Indonesia)
 
-Proyek ini telah dilengkapi dengan dokumentasi standar kolaborasi tim CTF dan open-source dalam Bahasa Indonesia:
-- 📖 **[CONTRIBUTING.md](file:///home/kali/Project/CTFPROJECT/CONTRIBUTING.md)**: Panduan alur branching Git, standar Conventional Commits, dan tata cara pembuatan Pull Request.
-- 🛡️ **[PANDUAN_KOLABORASI.md](file:///home/kali/Project/CTFPROJECT/PANDUAN_KOLABORASI.md)**: Panduan operasional live CTF tim manusia bersama agen AI menggunakan CLI `ctf-msg` dan koordinasi real-time.
-- 📜 **[CODE_OF_CONDUCT.md](file:///home/kali/Project/CTFPROJECT/CODE_OF_CONDUCT.md)**: Kode etik komunitas dan etika keamanan siber.
-- 📋 **[.github/](file:///home/kali/Project/CTFPROJECT/.github/)**: Template Pull Request dan Issue Tracker terstruktur untuk GitHub.
+Proyek ini telah dilengkapi dengan dokumentasi standar tim dan open-source dalam Bahasa Indonesia:
+- 📖 **[CONTRIBUTING.md](CONTRIBUTING.md)**: Panduan alur kerja branch Git, konvensi pesan commit, dan tata cara pembuatan Pull Request.
+- 🛡️ **[PANDUAN_KOLABORASI.md](PANDUAN_KOLABORASI.md)**: Panduan strategi operasional tim manusia bersama AI selama kompetisi live berlangsung menggunakan `ctf-msg`.
+- 📜 **[CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)**: Kode etik kolaborasi dan etika keamanan siber.
+- 📋 **[.github/](.github/)**: Template Pull Request dan Issue Tracker terstruktur untuk GitHub.
 
+---
+
+## ⚖️ Lisensi & Hak Cipta
+
+Proyek ini dilisensikan di bawah [Lisensi MIT](LICENSE). Dibuat untuk tujuan riset keamanan siber defensif, kompetisi CTF resmi, dan edukasi keamanan informasi.

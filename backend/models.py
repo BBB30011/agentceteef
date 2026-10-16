@@ -135,7 +135,8 @@ def auto_detect_default_models(settings: Settings) -> list[str]:
 
     # Antigravity CLI (Tokenless Host Execution)
     import shutil
-    if shutil.which("agy") or Path("/home/kali/.local/bin/agy").exists():
+    home_agy = Path.home() / ".local" / "bin" / "agy"
+    if shutil.which("agy") or home_agy.exists():
         models.append("agy/default")
 
     # If nothing detected, return original default models (may rely on claude-sdk or codex cli)

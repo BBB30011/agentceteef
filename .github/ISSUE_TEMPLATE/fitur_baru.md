@@ -22,6 +22,7 @@ Pilih kategori CTF yang paling diuntungkan:
 Jelaskan contoh perintah CLI atau cara kerja fitur yang diharapkan:
 ```bash
 uv run ctf-solve --fitur-baru ...
+# atau melalui launcher: ./run.sh
 ```
 
 ### 📌 Referensi / Sumber Daya Tambahan
