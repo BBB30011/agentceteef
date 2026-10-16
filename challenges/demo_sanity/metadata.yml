@@ -1,0 +1,11 @@
+name: demo_sanity
+category: misc
+value: 50
+description: |
+  Welcome to CTF Agent! This is a sanity check challenge to verify your setup,
+  sandboxing, and agent solver pipeline.
+tags:
+  - sanity
+  - warm-up
+hints:
+  - content: Check the distfiles directory.

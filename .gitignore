@@ -2,15 +2,22 @@
 .env
 creds.json
 
-# Logs and traces
-logs/
+# Logs and traces (keep directory structure via .gitkeep)
+logs/*
+!logs/.gitkeep
 *.log
 *.jsonl
 
-# Challenge data (downloaded at runtime)
-challenges*/
+# Generated test & competition reports
+ctf_report.html
+test_report.html
 
-# Python
+# Challenge data (downloaded dynamically, keep demo sanity challenge)
+challenges/*
+!challenges/demo_sanity/
+!challenges/.gitkeep
+
+# Python & Virtualenv
 __pycache__/
 *.pyc
 *.egg-info/
@@ -19,9 +26,9 @@ build/
 .venv/
 .mypy_cache/
 .ruff_cache/
-uv.lock
+.pytest_cache/
 
-# Runtime
+# Runtime Workspaces & State DB
 workspace/
 codex-schema-*/
 .claude/scheduled_tasks.lock
