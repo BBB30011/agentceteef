@@ -30,6 +30,13 @@ async def do_bash(sandbox, command: str, timeout_seconds: int = 60) -> str:
         parts.append(f"[exit {result.exit_code}]")
     out = "\n".join(parts).strip() or "(no output)"
 
+    # Self-healing auto-diagnosis on failure or stderr
+    if result.exit_code != 0 or result.stderr:
+        from backend.tools.self_healing import diagnose_execution_error
+        recovery_advice = diagnose_execution_error(out, result.exit_code, command)
+        if recovery_advice:
+            out += f"\n\n💡 [SELF-HEALING RECOVERY ADVICE]:\n{recovery_advice}"
+
     # Auto-detect potential CTF flags in the output
     flags = extract_flag_candidates(out)
     if flags:

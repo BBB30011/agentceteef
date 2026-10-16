@@ -240,7 +240,7 @@ Rangkuman seluruh perintah operasional yang sering digunakan:
 | `./run.sh smart` | Menjalankan swarm penalaran cerdas (Gemini 2.5 Pro + GPT-4o + Claude). |
 | `./run.sh report` | Menampilkan rekap ringkasan skor di terminal. |
 | `./run.sh report-html` | Mengekspor laporan kompetisi ke file `ctf_report.html`. |
-| `./run.sh test` | Menjalankan 26 unit & integration tests otomatis. |
+| `./run.sh test` | Menjalankan 31 unit & integration tests otomatis. |
 | `./run.sh lint` | Memeriksa format dan standar kode dengan Ruff. |
 | `make install-plugin` | Memasang Agent CeTeEf sebagai Plugin Antigravity global. |
 | `make uninstall-plugin` | Mencopot Agent CeTeEf dari konfigurasi plugin Antigravity. |
@@ -252,6 +252,9 @@ Rangkuman seluruh perintah operasional yang sering digunakan:
 
 Swarm AI dilengkapi peralatan analisis otomatis berkecepatan tinggi:
 - 🧩 **`auto_decode`**: Dekode kaskade berlapis (*multi-layer*: Base64 ➔ ROT13, Hex ➔ Base32, URL decode, dll).
+- 🔄 **`rot_bruteforce`**: Brute-force 25 rotasi sandi Caesar / ROT secara simultan dengan pendeteksian flag otomatis.
+- 🪪 **`jwt_decode`**: Membedah token JWT, mengekstrak claims tersembunyi, dan mendeteksi kerentanan algoritma (`none` algorithm, key confusion).
+- 📦 **`extract_archive`**: Mengekstrak arsip terkompresi (`.zip`, `.tar.gz`, `.bz2`, `.xz`, `.7z`) dan langsung memindai flag di dalamnya.
 - 🔑 **`single_byte_xor`**: Mencoba 256 kombinasi kunci XOR secara instan untuk membongkar ciphertext klasik.
 - 🏷️ **`identify_hash`**: Mengenali jenis hash (MD5, SHA1, SHA256, bcrypt, NTLM) serta menyarankan parameter Hashcat/John.
 - 🔎 **`file_info`**: Memeriksa *magic bytes* sejati untuk mendeteksi file yang disamarkan ekstensinya.
@@ -259,6 +262,28 @@ Swarm AI dilengkapi peralatan analisis otomatis berkecepatan tinggi:
 - 🛡️ **`checksec`**: Mengecek proteksi biner ELF (RELRO, Stack Canary, NX, PIE).
 - ⚙️ **`decompile`**: Membaca disassembly fungsi simbolis via Radare2 / Objdump.
 - 📈 **`calculate_entropy`**: Menghitung Shannon entropy untuk mendeteksi payload terenkripsi/terkompresi.
+
+---
+
+## 🛡️ Mesin Self-Healing & Pemulihan Error Otomatis (Auto-Recovery)
+
+Salah satu keunggulan utama Agent CeTeEf adalah kemampuan **Self-Healing**: ketika sebuah perintah exploit atau script mengalami kegagalan/error, sistem tidak akan menyerah begitu saja, melainkan langsung mendiagnosis pesan error dan menyuntikkan instruksi perbaikan otomatis (*auto-recovery advisory*):
+
+1. **Missing Module (`ModuleNotFoundError`)**:
+   Mendeteksi library Python yang belum terinstal (misal `pwntools`, `cryptography`) dan merekomendasikan `pip install` atau implementasi *pure-Python*.
+2. **Segmentation Fault (`SIGSEGV` / Exit Code 139)**:
+   Mendeteksi crash memori atau buffer overflow yang meleset dari RIP/EIP, dan merekomendasikan penggunaan *cyclic pattern* serta pelacakan via GDB (`gdb -q -batch -ex 'r' -ex 'bt' <binary>`).
+3. **Stack Canary Violation (`*** stack smashing detected ***`)**:
+   Mendeteksi terpicunya proteksi *canary*, mengarahkan agen untuk mencari *memory leak* (misal format string `%p`) untuk membocorkan nilai *canary* terlebih dahulu sebelum me-overwrite *return address*.
+4. **Target Service Offline (`Connection refused` / Errno 111)**:
+   Mendiagnosis port target yang belum aktif dan memverifikasi status service via `netstat -tlpn` atau `ps aux`.
+5. **Akses Ditolak (`Permission denied` / Exit Code 126)**:
+   Mendeteksi file atau exploit yang belum memiliki izin eksekusi dan menyarankan `chmod +x`.
+6. **Command Not Found (Exit Code 127)**:
+   Mendeteksi CLI yang tidak tersedia di sistem dan menyarankan alternatif *native* (misal menggunakan Python script atau `objdump` jika `r2` tidak ada).
+7. **Format Arsip Palsu**:
+   Mendeteksi header arsip yang korup atau ekstensi palsu, lalu mengarahkan ke pengecekan *magic bytes* sejati via `file_info`.
+
 
 ---
 

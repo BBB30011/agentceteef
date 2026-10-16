@@ -37,3 +37,20 @@ async def test_docker_available_check():
     # Should complete without throwing an unhandled exception
     res = await is_docker_available()
     assert isinstance(res, bool)
+
+
+@pytest.mark.asyncio
+async def test_do_bash_self_healing_recovery():
+    from backend.tools.core import do_bash
+
+    sandbox = LocalSandbox(image="local")
+    await sandbox.start()
+    try:
+        # Run command that generates ModuleNotFoundError
+        res = await do_bash(sandbox, "python3 -c 'import non_existent_ctf_module_xyz'")
+        assert "ModuleNotFoundError" in res
+        assert "SELF-HEALING RECOVERY ADVICE" in res
+        assert "pip install non_existent_ctf_module_xyz" in res
+    finally:
+        await sandbox.stop()
+

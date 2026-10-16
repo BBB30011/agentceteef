@@ -279,8 +279,15 @@ class AntigravitySolver:
                         log_path=self.tracer.path,
                     )
 
-            # If no confirmed flag yet, summarize findings
+            # If no confirmed flag yet, summarize findings and analyze for self-healing recovery
             summary = output_combined[:600].strip() or "No output from agy."
+            exit_code = getattr(proc, "returncode", 0) or 0
+            from backend.tools.self_healing import diagnose_execution_error
+            recovery = diagnose_execution_error(output_combined, exit_code)
+            if recovery:
+                self._bump_queue.append(f"Auto-Recovery Advisory:\n{recovery}")
+                summary = f"{summary}\n\n[Self-Healing Recovery Advisory]:\n{recovery}"
+
             return SolverResult(
                 flag=None,
                 status=GAVE_UP,

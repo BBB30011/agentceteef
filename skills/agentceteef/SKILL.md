@@ -70,7 +70,39 @@ from backend.tools.ctf_helpers import do_strings_search
 strings_out = await do_strings_search(sandbox, "<path_to_binary>", min_len=4, filter_pattern="flag|ctf")
 ```
 
+### 6. ROT / Caesar Cipher Brute-Force (1..25)
+Iterates through all 25 Caesar rotations and highlights flag matches:
+```python
+from backend.tools.ctf_helpers import do_rot_bruteforce
+result = do_rot_bruteforce("<ciphertext>")
+```
+
+### 7. JWT Inspection & Vulnerability Analyzer
+Decodes JWT headers, payloads, and claims, detects `none` algorithm or symmetric HMAC vulnerabilities:
+```python
+from backend.tools.ctf_helpers import do_jwt_decode
+result = do_jwt_decode("<jwt_token>")
+```
+
+### 8. Multi-Format Archive Extractor & Flag Scanner
+Unpacks `.zip`, `.tar.gz`, `.tar.bz2`, `.tar.xz`, `.7z` and scans contents for flags:
+```python
+from backend.tools.ctf_helpers import do_extract_archive
+result = await do_extract_archive(sandbox, "<archive_path>", "<dest_dir>")
+```
+
 ---
+
+## 🛡️ Self-Healing Error Recovery Engine
+
+When commands, exploits, or scripts produce runtime errors, Agent CeTeEf automatically diagnoses root causes and generates targeted recovery advice:
+- **Missing Python Packages** (`ModuleNotFoundError`): Suggests auto-installation or pure-python alternatives.
+- **Segmentation Faults / SIGSEGV** (`exit 139`): Identifies buffer overflow offset issues, suggesting cyclic patterns and GDB trace commands.
+- **Stack Smashing Detected**: Highlights canary overwrite violations and suggests format string leaks.
+- **Connection Refused / Resets**: Diagnoses target service state or crashed daemon processes.
+- **Permission Denied** (`exit 126`): Suggests `chmod +x` executable remedies.
+- **Command Not Found** (`exit 127`): Suggests standard tool fallbacks (`objdump`, Python scripts).
+- **Format Mismatch**: Identifies fake archive extensions and checks true magic bytes.
 
 ## 🚀 Running the Solver Swarm
 

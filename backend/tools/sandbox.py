@@ -145,3 +145,22 @@ async def strings_search(ctx: RunContext[SolverDeps], file_path: str, min_len: i
     return await do_strings_search(ctx.deps.sandbox, file_path, min_len, filter_pattern)
 
 
+async def rot_bruteforce(ctx: RunContext[SolverDeps], ciphertext: str) -> str:
+    """Brute force all 25 Caesar / ROT cipher shifts (1..25) to uncover hidden flags or messages."""
+    from backend.tools.ctf_helpers import do_rot_bruteforce
+    return do_rot_bruteforce(ciphertext)
+
+
+async def jwt_decode(ctx: RunContext[SolverDeps], token: str) -> str:
+    """Decode and inspect JSON Web Tokens (JWT) for hidden claims, signature algorithms, and vulnerabilities."""
+    from backend.tools.ctf_helpers import do_jwt_decode
+    return do_jwt_decode(token)
+
+
+async def extract_archive(ctx: RunContext[SolverDeps], archive_path: str, dest_dir: str = "") -> str:
+    """Extract compressed archives (.zip, .tar, .tar.gz, .tgz, .bz2, .xz, .7z) and search for flags."""
+    from backend.tools.ctf_helpers import do_extract_archive
+    return await do_extract_archive(ctx.deps.sandbox, archive_path, dest_dir)
+
+
+

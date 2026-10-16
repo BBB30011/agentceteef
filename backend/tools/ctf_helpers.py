@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import base64
 import binascii
+import json
 import logging
 import re
 import shlex
@@ -380,4 +381,148 @@ def do_entropy(data: bytes | str) -> float:
             entropy -= prob * math.log2(prob)
 
     return round(entropy, 4)
+
+
+def do_rot_bruteforce(ciphertext: str) -> str:
+    """Brute force all 25 Caesar / ROT cipher shifts (1..25) to uncover hidden flags or messages."""
+    text = ciphertext.strip()
+    if not text:
+        return "Empty input."
+
+    results: list[tuple[int, str, list[str]]] = []
+    for shift in range(1, 26):
+        rotated_chars = []
+        for ch in text:
+            if "a" <= ch <= "z":
+                rotated_chars.append(chr((ord(ch) - ord("a") + shift) % 26 + ord("a")))
+            elif "A" <= ch <= "Z":
+                rotated_chars.append(chr((ord(ch) - ord("A") + shift) % 26 + ord("A")))
+            else:
+                rotated_chars.append(ch)
+        candidate = "".join(rotated_chars)
+        flags = extract_flag_candidates(candidate)
+        results.append((shift, candidate, flags))
+
+    # Check if any rotation revealed flags
+    flagged = [item for item in results if item[2]]
+
+    lines = ["=== ROT / Caesar Cipher Brute-Force (1..25) ==="]
+    if flagged:
+        for shift, _cand, flags in flagged:
+            lines.append(f"🚩 [FLAG DETECTED at ROT-{shift}]: {', '.join(flags)}")
+        lines.append("")
+
+    for shift, candidate, flags in results:
+        flag_mark = f"  🚩 [{', '.join(flags)}]" if flags else ""
+        lines.append(f"ROT-{shift:02d}: {candidate[:100]}{flag_mark}")
+
+    return "\n".join(lines)
+
+
+def do_jwt_decode(token: str) -> str:
+    """Decode and inspect JSON Web Tokens (JWT) for hidden claims, signature algorithms, and vulnerabilities."""
+    clean = token.strip().strip('"').strip("'")
+    parts = clean.split(".")
+    if len(parts) < 2:
+        return "Invalid JWT token: Must contain at least header and payload separated by '.'."
+
+    def _b64_url_decode(s: str) -> bytes:
+        rem = len(s) % 4
+        if rem > 0:
+            s += "=" * (4 - rem)
+        return base64.urlsafe_b64decode(s.encode("ascii"))
+
+    header_json: dict[str, Any] = {}
+    payload_json: dict[str, Any] = {}
+
+    try:
+        header_raw = _b64_url_decode(parts[0]).decode("utf-8", errors="replace")
+        header_json = json.loads(header_raw)
+    except Exception as e:
+        header_raw = f"(error decoding header: {e})"
+
+    try:
+        payload_raw = _b64_url_decode(parts[1]).decode("utf-8", errors="replace")
+        payload_json = json.loads(payload_raw)
+    except Exception as e:
+        payload_raw = f"(error decoding payload: {e})"
+
+    sig_present = len(parts) >= 3 and bool(parts[2])
+
+    lines = ["=== JWT Token Analysis ==="]
+
+    # Flag discovery in token, header, or payload
+    flags = extract_flag_candidates(clean) + extract_flag_candidates(payload_raw)
+    flags = list(dict.fromkeys(flags))
+    if flags:
+        lines.append(f"🚩 FLAG(S) FOUND IN JWT: {', '.join(flags)}\n")
+
+    lines.append(f"Header:\n{json.dumps(header_json, indent=2) if header_json else header_raw}")
+    lines.append(f"\nPayload:\n{json.dumps(payload_json, indent=2) if payload_json else payload_raw}")
+    lines.append(f"\nSignature: {'Present (' + parts[2][:20] + '...)' if sig_present else 'None / Empty'}")
+
+    # Vulnerability & security checks
+    vulns: list[str] = []
+    alg = str(header_json.get("alg", "")).lower()
+    if alg == "none":
+        vulns.append("⚠️ CRITICAL: Token algorithm is set to 'none' — signature verification can be completely bypassed!")
+    elif alg.startswith("hs"):
+        vulns.append(f"ℹ️ HMAC Symmetric ({header_json.get('alg')}): Check for weak secret with hashcat -m 16500 or jwt-tool.")
+        vulns.append("ℹ️ If the server expects RS256, test for Key Confusion (HMAC using the public RSA key as the HMAC secret).")
+    elif alg.startswith("rs"):
+        vulns.append(f"ℹ️ RSA Asymmetric ({header_json.get('alg')}): Test for algorithm switching (change to HS256 with public key), or jku/kid injection.")
+
+    if "admin" in payload_json and not payload_json["admin"]:
+        vulns.append("💡 Notice: 'admin' claim is false. Try modifying payload to {\"admin\": true} and testing unsigned or none-alg.")
+    if "role" in payload_json and payload_json["role"] != "admin":
+        vulns.append(f"💡 Notice: 'role' is '{payload_json['role']}'. Try elevating to 'admin' or 'root'.")
+
+    if vulns:
+        lines.append("\nSecurity Analysis:")
+        for v in vulns:
+            lines.append(f"  {v}")
+
+    return "\n".join(lines)
+
+
+async def do_extract_archive(sandbox: Any, archive_path: str, dest_dir: str = "") -> str:
+    """Extract compressed archives (.zip, .tar, .tar.gz, .tgz, .bz2, .xz, .7z) and search for flags."""
+    safe_src = shlex.quote(archive_path)
+    if not dest_dir:
+        dest_dir = f"{archive_path}_extracted"
+    safe_dest = shlex.quote(dest_dir)
+
+    cmd = (
+        f"mkdir -p {safe_dest} && "
+        f"FTYPE=$(file -b {safe_src} 2>/dev/null); "
+        f"if [[ \"$FTYPE\" == *Zip* ]] || [[ \"{archive_path}\" == *.zip ]]; then "
+        f"  unzip -q -o {safe_src} -d {safe_dest} 2>/dev/null || python3 -c 'import zipfile; zipfile.ZipFile(\"{archive_path}\").extractall(\"{dest_dir}\")'; "
+        f"elif [[ \"$FTYPE\" == *gzip* ]] || [[ \"{archive_path}\" == *.tar.gz ]] || [[ \"{archive_path}\" == *.tgz ]]; then "
+        f"  tar -xzf {safe_src} -C {safe_dest} 2>/dev/null || gzip -dc {safe_src} > {safe_dest}/extracted_file 2>/dev/null; "
+        f"elif [[ \"$FTYPE\" == *bzip2* ]] || [[ \"{archive_path}\" == *.tar.bz2 ]] || [[ \"{archive_path}\" == *.tbz2 ]]; then "
+        f"  tar -xjf {safe_src} -C {safe_dest} 2>/dev/null || bzip2 -dc {safe_src} > {safe_dest}/extracted_file 2>/dev/null; "
+        f"elif [[ \"$FTYPE\" == *XZ* ]] || [[ \"{archive_path}\" == *.tar.xz ]] || [[ \"{archive_path}\" == *.txz ]]; then "
+        f"  tar -xJf {safe_src} -C {safe_dest} 2>/dev/null || xz -dc {safe_src} > {safe_dest}/extracted_file 2>/dev/null; "
+        f"elif [[ \"$FTYPE\" == *POSIX\\ tar* ]] || [[ \"{archive_path}\" == *.tar ]]; then "
+        f"  tar -xf {safe_src} -C {safe_dest} 2>/dev/null; "
+        f"elif [[ \"$FTYPE\" == *7-zip* ]] || [[ \"{archive_path}\" == *.7z ]]; then "
+        f"  7z x -y -o{safe_dest} {safe_src} 2>/dev/null; "
+        f"else "
+        f"  tar -xf {safe_src} -C {safe_dest} 2>/dev/null || unzip -q -o {safe_src} -d {safe_dest} 2>/dev/null; "
+        f"fi; "
+        f"ls -lah {safe_dest}"
+    )
+
+    res = await sandbox.exec(cmd, timeout_s=40)
+    out = (res.stdout + "\n" + res.stderr).strip()
+
+    flags_res = await sandbox.exec(
+        f"grep -rEahoI '[a-zA-Z0-9_-]+{{[^}}]{{4,100}}}}' {safe_dest} 2>/dev/null | sort -u | head -n 20",
+        timeout_s=15,
+    )
+    flag_out = flags_res.stdout.strip()
+    flag_line = f"🚩 EXTRACTED FLAGS DISCOVERED:\n{flag_out}\n\n" if flag_out else ""
+
+    return f"=== Archive Extraction ({archive_path} -> {dest_dir}) ===\n{flag_line}{out}"
+
 
