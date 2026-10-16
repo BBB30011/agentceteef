@@ -53,51 +53,62 @@ Now refactored and reinforced in **CTFPROJECT** with an enterprise-grade modular
 
 ---
 
-## Quick Start
+## Quick Start — Super Mudah & Cepat
 
-### 1. One-Command Setup
+### 1. One-Click Interactive Launcher (Rekomendasi)
+Cukup jalankan satu perintah ini, wizard interaktif akan memandu Anda:
 ```bash
-./setup.sh
-# or: make setup
+./run.sh
+```
+Atau via Makefile:
+```bash
+make run
 ```
 
-### 2. Configure Credentials
-Edit `.env` with your API key(s) and CTFd credentials:
+### 2. Preset Profil Cepat (Tanpa Ribet Mengatur Flag)
+- **Mode Tanpa Token (Antigravity CLI / Gratis)**:
+  ```bash
+  make tokenless
+  # atau: uv run ctf-solve --profile tokenless
+  ```
+- **Mode Cepat (Throughput Tinggi)**:
+  ```bash
+  make fast
+  # atau: uv run ctf-solve --profile fast
+  ```
+- **Mode Smart / Deep Reasoning (Gemini 2.5 Pro / GPT-4o / Claude 3.7)**:
+  ```bash
+  uv run ctf-solve --profile smart
+  ```
+
+### 3. Pecahkan Satu Tantangan Tertentu
+```bash
+uv run ctf-solve --challenge ./challenges/demo_sanity --no-submit
+```
+
+### 4. Laporan & Ekspor Visual (Dark Mode HTML)
+```bash
+# Cetak di terminal:
+make report
+
+# Ekspor ke file HTML interaktif siap buka di browser:
+make report-html
+# atau: uv run ctf-solve --export-html ctf_report.html
+```
+
+---
+
+## Konfigurasi Kredensial (.env)
+Edit `.env` jika ingin menggunakan API keys atau menghubungkan ke live CTFd server:
 ```env
 CTFD_URL=https://ctf.example.com
 CTFD_TOKEN=ctfd_your_token_here
 
-# Configure at least one provider:
+# Opsional: API keys untuk mode cloud multi-model:
 GEMINI_API_KEY=your_gemini_key
 OPENAI_API_KEY=your_openai_key
 ANTHROPIC_API_KEY=your_anthropic_key
 DEEPSEEK_API_KEY=your_deepseek_key
-```
-
-### 3. Run the Agent
-
-#### Solve a single challenge directory:
-```bash
-uv run ctf-solve --challenge ./challenges/crypto-easy
-```
-
-#### Run autonomous competition coordinator:
-```bash
-uv run ctf-solve \
-  --ctfd-url https://ctf.example.com \
-  --ctfd-token ctfd_your_token \
-  --challenges-dir challenges \
-  --max-challenges 5
-```
-
-#### Resume competition (skips previously solved challenges):
-```bash
-uv run ctf-solve --resume
-```
-
-#### View solve statistics & export report:
-```bash
-uv run ctf-solve --report
 ```
 
 ---
