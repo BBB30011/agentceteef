@@ -1,4 +1,3 @@
-import pytest
 from backend.config import Settings
 from backend.models import (
     auto_detect_default_models,

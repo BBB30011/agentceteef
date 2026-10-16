@@ -219,9 +219,8 @@ class Solver:
         assert self._agent is not None
 
         t0 = time.monotonic()
-        steps_before = self._step_count[0]
-
         try:
+
             from pydantic_ai.usage import UsageLimits
             result = await self._agent.run(
                 "Solve this CTF challenge." if not self._messages else "Continue solving.",

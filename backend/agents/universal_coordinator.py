@@ -21,8 +21,6 @@ from backend.agents.coordinator_core import (
 )
 from backend.agents.coordinator_loop import build_deps, run_event_loop
 from backend.config import Settings
-from backend.cost_tracker import CostTracker
-from backend.ctfd import CTFdClient
 from backend.deps import CoordinatorDeps
 from backend.models import resolve_model, resolve_model_settings
 

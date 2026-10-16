@@ -4,9 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import os
 import shutil
-import time
 from pathlib import Path
 from typing import Any
 
@@ -14,8 +12,8 @@ from backend.config import Settings
 from backend.cost_tracker import CostTracker
 from backend.ctfd import CTFdClient
 from backend.prompts import ChallengeMeta, build_prompt, list_distfiles
-from backend.sandbox import DockerSandbox, LocalSandbox, SandboxProtocol
-from backend.solver_base import CANCELLED, CORRECT_MARKERS, ERROR, FLAG_FOUND, GAVE_UP, SolverResult
+from backend.sandbox import LocalSandbox, SandboxProtocol
+from backend.solver_base import CANCELLED, ERROR, FLAG_FOUND, GAVE_UP, SolverResult
 from backend.tools.ctf_helpers import extract_flag_candidates
 from backend.tracing import SolverTracer
 
