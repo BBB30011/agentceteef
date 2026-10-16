@@ -13,101 +13,217 @@
 
 ---
 
-## ⚡ Panduan Cepat 3 Langkah (Quick Start Tanpa Bingung)
+## ⚡ Panduan Kilat 3 Menit (Quick Start)
 
-Anda hanya butuh **3 perintah** di terminal untuk memulai:
+Bagi Anda yang ingin langsung mencoba tanpa berbelit-belit:
 
 ```bash
-# Langkah 1: Masuk ke folder proyek
-cd CTFPROJECT
+# 1. Clone repositori dari GitHub
+git clone https://github.com/BBB30011/agentceteef.git
+cd agentceteef
 
-# Langkah 2: Jalankan skrip setup (otomatis menyiapkan dependensi & diagnostik sistem)
+# 2. Jalankan skrip setup otomatis
 ./setup.sh
 
-# Langkah 3: Uji pemecahan tantangan demo pertama Anda!
+# 3. Jalankan pengujian soal demo bawaan
 ./run.sh demo
 ```
-*Selesai! Anda akan langsung melihat AI swarm menganalisis soal demo dan merebut flag dalam hitungan detik!* 🎉
+*Selesai! AI Swarm akan langsung menganalisis soal demo dan merebut flag dalam hitungan detik!* 🎉
 
 ---
 
-## 📋 Lembar Sontekan Perintah (`./run.sh` Cheat Sheet)
+## 📖 Panduan Lengkap: Dari Clone Git Sampai Mahir Menggunakan
 
-Semua operasi harian dapat dijalankan melalui perintah `./run.sh` yang mudah diingat:
+Panduan langkah demi langkah dari nol bagi Anda yang baru pertama kali menggunakan Agent CeTeEf:
 
-| Perintah | Fungsi | Kapan Harus Digunakan? |
-|---|---|---|
-| **`./run.sh`** | **Interactive Wizard Menu** | 🌟 **Rekomendasi bagi pemula** yang ingin dipandu menu visual langkah demi langkah. |
-| **`./run.sh demo`** | **Uji Soal Bawaan** | Untuk memastikan seluruh sistem, sandbox, dan solver bekerja normal. |
-| **`./run.sh tokenless`** | **Mode Gratis ($0 Token)** | Jika Anda ingin solver berjalan offline menggunakan Antigravity CLI tanpa API key berbayar. |
-| **`./run.sh fast`** | **Swarm Kecepatan Tinggi** | Menggunakan model latensi rendah (Gemini Flash + Groq Llama 3.3) untuk berburu *First Blood*. |
-| **`./run.sh smart`** | **Swarm Penalaran Cerdas** | Menggunakan model reasoning kuat (Gemini 2.5 Pro + GPT-4o + Claude) untuk soal logika/kripto rumit. |
-| **`./run.sh report-html`** | **Ekspor Laporan Dark Mode** | Menghasilkan file visual `ctf_report.html` yang bisa dibuka langsung di browser web. |
-| **`./run.sh test`** | **Uji 26 Test Otomatis** | Menjalankan seluruh pengujian unit & integrasi untuk memverifikasi keutuhan kode. |
-| **`./run.sh lint`** | **Pemeriksaan Kode Ruff** | Memastikan tidak ada kesalahan sintaksis atau standar gaya kode. |
+### 📥 Langkah 1: Mengambil Proyek dari Git (Clone Repository)
+
+Buka terminal Linux Anda (direkomendasikan Kali Linux, Ubuntu, Debian, atau WSL2) dan ketik:
+
+```bash
+git clone https://github.com/BBB30011/agentceteef.git
+cd agentceteef
+```
+
+Jika diminta memasukkan Personal Access Token (PAT) GitHub untuk repositori privat:
+```text
+Username: BBB30011
+Password: <token_github_pat_anda>
+```
 
 ---
 
-## 🎯 3 Skenario Penggunaan Nyata (Paling Sering Digunakan)
+### ⚙️ Langkah 2: Menyiapkan Lingkungan Sistem (`./setup.sh`)
 
-### 1. Skenario A: "Saya ingin pakai yang 100% GRATIS tanpa beli token API"
-Cukup jalankan satu perintah ini:
+Jalankan skrip inisialisasi lingkungan:
+```bash
+./setup.sh
+```
+
+**Apa yang dilakukan oleh skrip ini secara otomatis?**
+1. Memeriksa ketersediaan Python (minimal Python 3.13).
+2. Memeriksa atau menginstal package manager ultra-cepat **Astral uv**.
+3. Mengunduh dan menyinkronkan seluruh dependensi proyek (`pydantic-ai`, `rich`, `click`, dll).
+4. Membuat file konfigurasi `.env` dari template bawaan `.env.example`.
+5. Menjalankan **Diagnostik Toolchain CTF** untuk mendeteksi ketersediaan:
+   - `checksec` (analisis proteksi biner ELF)
+   - `r2` / `radare2` (dekompilasi dan disassembler)
+   - `strings` & `file` (inspeksi tipe berkas dan ekstraksi string)
+   - `agy` (Antigravity CLI untuk mode tanpa token)
+
+---
+
+### 🚀 Langkah 3: Menjalankan Solver Pertama Kali
+
+Ada 2 cara paling mudah untuk menjalankan Agent CeTeEf:
+
+#### Cara A: Menggunakan Menu Interaktif (Paling Ramah Pemula)
+Cukup jalankan:
+```bash
+./run.sh
+```
+Akan muncul menu pilihan interaktif di terminal Anda:
+```text
+Silakan pilih mode operasi yang Anda inginkan:
+  1. 🚀 Mode Tanpa Token (Antigravity CLI / Local) — $0 token cost, offline-ready
+  2. ⚡ Swarm Cepat (Fast Swarm) — Latensi rendah & throughput tinggi
+  3. 🧠 Swarm Cerdas (Smart / Deep Swarm) — Gemini 2.5 Pro / GPT-4o / Claude
+  4. 🎯 Pecahkan 1 Tantangan Spesifik — Pilih tantangan tertentu
+  5. 📊 Lihat Laporan & Ekspor HTML — Statistik kompetisi
+  0. 🚪 Keluar
+```
+Ketik angka pilihan Anda (misalnya: `1` untuk mode gratis atau `4` untuk memilih soal) lalu tekan **Enter**.
+
+#### Cara B: Menguji Tantangan Demo Bawaan
+```bash
+./run.sh demo
+```
+Perintah ini akan menyerang soal uji coba `challenges/demo_sanity/`, mengekstrak flag, dan menampilkan banner perayaan kemenangan `🎉 FLAG CAPTURED & CONFIRMED!` dengan biaya **$0.00**.
+
+---
+
+### 🆓 Langkah 4: Menggunakan Mode 100% Gratis Tanpa Token API ($0 Cost)
+
+Jika Anda **tidak memiliki API Key berbayar** (seperti OpenAI atau Anthropic), Anda tetap bisa menggunakan Agent CeTeEf secara maksimal menggunakan **Mode Tanpa Token**:
+
 ```bash
 ./run.sh tokenless
 ```
-> **Penjelasan:** Mode ini otomatis memakai Antigravity CLI (`agy`) dan toolchain lokal Linux (Kali Linux). Tidak ada kuota token yang terpakai ($0.00).
+Mode ini memanfaatkan toolchain host lokal dan Antigravity CLI (`agy`) untuk menganalisis dan memecahkan soal secara lokal tanpa internet dan tanpa kuota token.
 
 ---
 
-### 2. Skenario B: "Saya punya soal CTF sendiri, bagaimana cara menyuruh AI menyelesaikannya?"
-Hanya perlu 2 langkah mudah:
-1. Buat folder baru di dalam folder `challenges/`, misalnya: `challenges/soal_kripto/`
-2. Masukkan file soal ke dalam subfolder `distfiles/` dan buat file `metadata.yml`.
-3. Jalankan solver terhadap folder tersebut:
-```bash
-./run.sh --challenge challenges/soal_kripto --no-submit
-```
-*(Flag `--no-submit` memastikan AI hanya mencari flag tanpa mencoba mengunggahnya ke server online).*
+### 📂 Langkah 5: Memecahkan Soal CTF Milik Anda Sendiri
 
----
+Ingin menyuruh AI menyelesaikan soal CTF yang Anda miliki? Sangat mudah:
 
-### 3. Skenario C: "Saya sedang tanding di lomba online (CTFd), bagaimana cara menghubungkannya?"
-1. Salin template konfigurasi jika belum ada:
+1. **Buat folder soal baru** di dalam direktori `challenges/`, misalnya:
    ```bash
-   cp .env.example .env
+   mkdir -p challenges/soal_kripto/distfiles
    ```
-2. Buka file `.env` dan masukkan URL lomba serta token akses Anda:
+2. **Salin berkas soal** (biner, ciphertext, script, gambar, pcap) ke dalam folder `challenges/soal_kripto/distfiles/`.
+3. **Buat file `challenges/soal_kripto/metadata.yml`**:
+   ```yaml
+   name: soal_kripto
+   category: crypto          # pwn | rev | crypto | web | forensics | misc
+   value: 100
+   description: |
+     Dekripsikan pesan rahasia yang ada di distfiles/pesan.txt.
+   ```
+4. **Jalankan solver ke folder tersebut**:
+   ```bash
+   # Mode gratis / offline:
+   ./run.sh --challenge challenges/soal_kripto --profile tokenless --no-submit
+
+   # Atau mode swarm cepat:
+   ./run.sh --challenge challenges/soal_kripto --profile fast --no-submit
+   ```
+   *(Flag `--no-submit` memastikan agen hanya mencari flag tanpa mencoba mengunggahnya ke server online).*
+
+---
+
+### 🌐 Langkah 6: Menghubungkan ke Kompetisi Online (Platform CTFd)
+
+Saat Anda mengikuti lomba CTF resmi berbasis platform CTFd:
+
+1. **Edit file `.env`**:
    ```env
+   # Kredensial Platform Lomba
    CTFD_URL=https://ctf.penyelenggara.com
-   CTFD_TOKEN=ctfd_token_rahasia_anda_disini
+   CTFD_TOKEN=ctfd_token_api_anda_dari_profil_akun
+
+   # Kunci API Model AI (isi yang Anda miliki)
+   GEMINI_API_KEY=AIzaSy...
+   OPENAI_API_KEY=sk-proj-...
+   GROQ_API_KEY=gsk_...
    ```
-3. Tambahkan API key model yang Anda miliki (misal: `GEMINI_API_KEY`, `OPENAI_API_KEY`, atau `GROQ_API_KEY`).
-4. Jalankan agen:
+2. **Jalankan Agent CeTeEf**:
    ```bash
    ./run.sh
+   # Pilih opsi 2 (Fast Swarm) atau opsi 3 (Smart Swarm)
    ```
-   *Agent CeTeEf akan otomatis memindai soal-soal di platform, mengunduh file, membagi tugas ke swarm, dan mengirimkan flag yang valid dengan jeda anti-spam (cooldown).*
+   Agen akan:
+   - Memindai seluruh soal aktif di scoreboard CTFd.
+   - Mengunduh berkas lampiran secara otomatis ke folder workspace lokal.
+   - Mempekerjakan swarm AI secara paralel untuk memecahkan soal.
+   - Mengirimkan flag ke server CTFd secara otomatis dengan jeda aman (*cooldown & anti-spam*).
 
 ---
 
-## 📊 Melihat Rekap Skor & Laporan Visual
+### 💬 Langkah 7: Memberikan Petunjuk kepada AI yang Sedang Berjalan (Human-in-the-Loop)
 
-Ingin melihat ringkasan flag apa saja yang sudah berhasil didapatkan tim?
+Jika Anda melihat AI sedang berusaha memecahkan soal dan Anda (sebagai manusia) menemukan petunjuk tambahan melalui Ghidra/CyberChef, Anda bisa **menyuntikkan petunjuk secara langsung** tanpa mematikan agen:
+
+Buka jendela terminal baru di folder yang sama, lalu ketik:
 ```bash
-# 1. Ringkasan teks di terminal:
+uv run ctf-msg "Fungsi verifikasi flag menggunakan algoritma XOR dengan kunci byte 0x5A"
+```
+Coordinator AI akan menerima pesan Anda dan langsung meneruskannya ke solver yang sedang bekerja pada soal terkait!
+
+---
+
+### 📊 Langkah 8: Memeriksa Hasil & Mengekspor Laporan Skor
+
+Kapan saja selama atau setelah kompetisi, Anda dapat melihat statistik pencapaian:
+
+```bash
+# 1. Tampilkan rekap tabel di terminal:
 ./run.sh report
 
-# 2. Hasilkan laporan halaman web Dark Mode:
+# 2. Hasilkan laporan visual Dark Mode HTML:
 ./run.sh report-html
 ```
-Buka file `ctf_report.html` di browser Anda (Google Chrome / Firefox) untuk melihat tabel interaktif lengkap dengan durasi waktu per soal, model pemenang, dan flag yang didapatkan!
+File **`ctf_report.html`** akan dibuat. Buka file tersebut dengan peramban web (Chrome, Firefox, Edge) untuk melihat:
+- Total soal yang berhasil diselesaikan (*Total Solved*).
+- Total poin yang diperoleh.
+- Tabel rincian per soal: Kategori badge, flag yang ditemukan, model pemenang, dan durasi pengerjaan.
+- Riwayat submisi lengkap.
+
+---
+
+## 📋 Tabel Perintah Penting (Cheat Sheet)
+
+Rangkuman seluruh perintah operasional yang sering digunakan:
+
+| Perintah | Keterangan Singkat |
+|---|---|
+| `./run.sh` | Membuka interactive menu wizard utama. |
+| `./run.sh demo` | Menguji pemecahan soal demo sanity check. |
+| `./run.sh tokenless` | Menjalankan solver tanpa biaya API token ($0 Cost). |
+| `./run.sh fast` | Menjalankan swarm kecepatan tinggi (Gemini Flash + Groq Llama 3.3). |
+| `./run.sh smart` | Menjalankan swarm penalaran cerdas (Gemini 2.5 Pro + GPT-4o + Claude). |
+| `./run.sh report` | Menampilkan rekap ringkasan skor di terminal. |
+| `./run.sh report-html` | Mengekspor laporan kompetisi ke file `ctf_report.html`. |
+| `./run.sh test` | Menjalankan 26 unit & integration tests otomatis. |
+| `./run.sh lint` | Memeriksa format dan standar kode dengan Ruff. |
+| `make clean` | Membersihkan cache dan file temporary. |
 
 ---
 
 ## 🛠️ Peralatan CTF Bawaan (Built-in Security Tools)
 
-Swarm AI dilengkapi dengan beragam tool analisis otomatis yang bekerja di latar belakang:
-- 🧩 **`auto_decode`**: Dekode otomatis kaskade berlapis (*multi-layer*: Base64 ➔ ROT13, Hex ➔ Base32, URL decode, dll).
+Swarm AI dilengkapi peralatan analisis otomatis berkecepatan tinggi:
+- 🧩 **`auto_decode`**: Dekode kaskade berlapis (*multi-layer*: Base64 ➔ ROT13, Hex ➔ Base32, URL decode, dll).
 - 🔑 **`single_byte_xor`**: Mencoba 256 kombinasi kunci XOR secara instan untuk membongkar ciphertext klasik.
 - 🏷️ **`identify_hash`**: Mengenali jenis hash (MD5, SHA1, SHA256, bcrypt, NTLM) serta menyarankan parameter Hashcat/John.
 - 🔎 **`file_info`**: Memeriksa *magic bytes* sejati untuk mendeteksi file yang disamarkan ekstensinya.
@@ -118,7 +234,7 @@ Swarm AI dilengkapi dengan beragam tool analisis otomatis yang bekerja di latar 
 
 ---
 
-## ❓ Pertanyaan yang Sering Ditanyakan (FAQ)
+## ❓ Tanya Jawab & Pemecahan Masalah (FAQ)
 
 <details>
 <summary><b>1. Apakah saya wajib menginstal Docker?</b></summary>
@@ -127,26 +243,34 @@ Swarm AI dilengkapi dengan beragam tool analisis otomatis yang bekerja di latar 
 </details>
 
 <details>
-<summary><b>2. Apakah saya harus punya API key OpenAI atau Gemini?</b></summary>
+<summary><b>2. Apakah saya harus punya saldo / API key OpenAI atau Gemini?</b></summary>
 
 **Tidak.** Anda bisa menggunakan **Mode Tanpa Token (`./run.sh tokenless`)** yang memanfaatkan Antigravity CLI lokal secara gratis ($0 cost). API key hanya diperlukan jika Anda ingin memanfaatkan model komputasi awan seperti GPT-4o, Claude 3.7, atau Gemini Pro.
 </details>
 
 <details>
-<summary><b>3. Di mana file tantangan disimpan?</b></summary>
+<summary><b>3. Di mana saya bisa melihat contoh-contoh soal bawaan?</b></summary>
 
-Semua tantangan disimpan di direktori [`challenges/`](challenges/). Repositori ini sudah menyertakan 4 contoh soal bawaan:
-- `demo_sanity`: Uji coba dasar.
-- `crypto_cascade`: Latihan kriptografi multi-lapis.
-- `forensics_disguise`: Latihan forensik berkas terselubung.
-- `rev_vault`: Latihan reverse engineering logika Python.
-Panduan lengkap ada di [`challenges/README.md`](challenges/README.md).
+Semua contoh soal tersimpan di folder [`challenges/`](challenges/):
+- **`demo_sanity/`**: Soal pemanasan untuk memastikan sandbox dan pipeline bekerja normal.
+- **`crypto_cascade/`**: Soal kriptografi multi-lapis (`ROT13 + Base64`).
+- **`forensics_disguise/`**: Soal forensik file terselubung (`avatar.png` yang merupakan file teks berisi flag).
+- **`rev_vault/`**: Soal reverse engineering algoritma verifikasi Python (`vault.py`).
 </details>
 
 <details>
-<summary><b>4. Bagaimana cara menghentikan proses agen jika sedang berjalan?</b></summary>
+<summary><b>4. Bagaimana cara menghentikan proses agen yang sedang berjalan?</b></summary>
 
-Cukup tekan tombol **`Ctrl + C`** pada terminal. State pengerjaan akan tersimpan di database lokal SQLite (`ctf_state.sqlite3`), sehingga jika Anda menjalankan `./run.sh --resume`, soal yang sudah berhasil dipecahkan tidak akan dikerjakan ulang.
+Cukup tekan tombol **`Ctrl + C`** pada terminal. State pengerjaan akan tersimpan di database lokal SQLite (`ctf_state.sqlite3`). Jika Anda ingin melanjutkan kembali, jalankan perintah dengan menambahkan flag `--resume` (misal: `./run.sh --resume`), sehingga soal yang sudah berhasil dipecahkan tidak akan dikerjakan ulang.
+</details>
+
+<details>
+<summary><b>5. Bagaimana cara mereset riwayat pengerjaan dari awal?</b></summary>
+
+Jika Anda ingin mengulang dari nol, cukup hapus database state lokal:
+```bash
+rm -f ctf_state.sqlite3
+```
 </details>
 
 ---
