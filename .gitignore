@@ -16,6 +16,8 @@ test_report.html
 challenges/*
 !challenges/demo_sanity/
 !challenges/crypto_cascade/
+!challenges/forensics_disguise/
+!challenges/rev_vault/
 !challenges/README.md
 !challenges/.gitkeep
 

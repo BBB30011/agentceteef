@@ -65,3 +65,53 @@ async def test_crypto_cascade_challenge():
     finally:
         await sandbox.stop()
 
+
+@pytest.mark.asyncio
+async def test_forensics_disguise_challenge():
+    disguise_dir = Path("challenges/forensics_disguise")
+    assert disguise_dir.exists()
+
+    meta = ChallengeMeta.from_yaml(disguise_dir / "metadata.yml")
+    assert meta.name == "forensics_disguise"
+    assert meta.category == "forensics"
+
+    sandbox = LocalSandbox(image="local", challenge_dir=str(disguise_dir))
+    await sandbox.start()
+
+    try:
+        from backend.tools.ctf_helpers import do_file_info, do_strings_search
+        # 1. file_info exposes that avatar.png is actually ASCII text
+        info = await do_file_info(sandbox, "/challenge/distfiles/avatar.png")
+        assert "ASCII" in info or "text" in info
+
+        # 2. strings_search extracts the hidden flag
+        strings_out = await do_strings_search(sandbox, "/challenge/distfiles/avatar.png", min_len=4)
+        assert "flag{file_inspection_and_strings_reveal_all_secrets}" in strings_out
+    finally:
+        await sandbox.stop()
+
+
+@pytest.mark.asyncio
+async def test_rev_vault_challenge():
+    rev_dir = Path("challenges/rev_vault")
+    assert rev_dir.exists()
+
+    meta = ChallengeMeta.from_yaml(rev_dir / "metadata.yml")
+    assert meta.name == "rev_vault"
+    assert meta.category == "rev"
+
+    sandbox = LocalSandbox(image="local", challenge_dir=str(rev_dir))
+    await sandbox.start()
+
+    try:
+        script = await do_read_file(sandbox, "/challenge/distfiles/vault.py")
+        assert "expected =" in script
+
+        # Run script with correct key
+        key = "flag{rev_vault_unlocked}"
+        res = await sandbox.exec(f"python3 /challenge/distfiles/vault.py << 'EOF'\n{key}\nEOF")
+        assert "Vault unlocked!" in res.stdout
+        assert key in res.stdout
+    finally:
+        await sandbox.stop()
+

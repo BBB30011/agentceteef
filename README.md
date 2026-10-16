@@ -5,7 +5,7 @@
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Python: 3.13+](https://img.shields.io/badge/Python-3.13%2B-blue.svg)](pyproject.toml)
-[![Tests: Passing](https://img.shields.io/badge/Tests-24%20passed-brightgreen.svg)](tests/)
+[![Tests: Passing](https://img.shields.io/badge/Tests-26%20passed-brightgreen.svg)](tests/)
 [![Code Style: Ruff](https://img.shields.io/badge/Code%20Style-Ruff-000000.svg)](pyproject.toml)
 
 **Agent CeTeEf** adalah framework otonom untuk kompetisi *Capture The Flag* (CTF) yang memadukan kekuatan berbagai model kecerdasan buatan (*multi-model swarm*) untuk menemukan kerentanan, merancang eksploitasi, dan merebut bendera (*flag*) secara paralel dan real-time.
@@ -23,6 +23,8 @@ Kini telah direfaktor dan diperkuat dalam repositori **Agent CeTeEf** dengan ars
   - `auto_decode`: Dekode kaskade otomatis berlapis (*multi-layer cascade*: Base64, Hex, Base32, Rot13, URL, Binary).
   - `single_byte_xor`: Brute force XOR 1-byte otomatis (0..255) untuk memecahkan ciphertext XOR klasik.
   - `identify_hash`: Identifikasi format hash (MD5, SHA1, SHA256, bcrypt, NTLM) dan saran mode Hashcat/John.
+  - `file_info`: Inspeksi jenis berkas sejati, mime-type, ukuran, dan magic bytes untuk mendeteksi ekstensi terselubung.
+  - `strings_search`: Ekstraksi string cetak dari file biner/data dengan filter kata kunci dan pemindaian flag otomatis.
   - `calculate_entropy`: Analisis Shannon entropy untuk mendeteksi payload terenkripsi/terkompresi.
   - `find_flags`: Pemindaian pola regex otomatis di seluruh file workspace.
 - 🖥️ **UI/UX Interaktif & Visual Memukau**:
@@ -196,9 +198,11 @@ agentceteef/
 ├── challenges/                      # Direktori tantangan CTF
 │   ├── README.md                    # Panduan format & penambahan tantangan
 │   ├── demo_sanity/                 # Contoh challenge verifikasi bawaan
-│   └── crypto_cascade/              # Contoh challenge kriptografi multi-layer
+│   ├── crypto_cascade/              # Contoh challenge kriptografi multi-layer
+│   ├── forensics_disguise/          # Contoh challenge file forensics & magic bytes
+│   └── rev_vault/                   # Contoh challenge reverse engineering logika
 ├── logs/                            # Direktori jejak log & audit (.gitkeep)
-├── tests/                           # 24 Unit & Integration tests (100% passing)
+├── tests/                           # 26 Unit & Integration tests (100% passing)
 │   └── fixtures/demo_sanity/        # Fixture pengujian otomatis
 ├── .env.example                     # Template konfigurasi kredensial
 ├── .gitignore                       # Aturan pengabaian file terlindungi

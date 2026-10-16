@@ -133,3 +133,15 @@ async def identify_hash(ctx: RunContext[SolverDeps], hash_str: str) -> str:
     return do_identify_hash(hash_str)
 
 
+async def file_info(ctx: RunContext[SolverDeps], file_path: str) -> str:
+    """Inspect file true type, mime type, size, and magic bytes for forensics analysis."""
+    from backend.tools.ctf_helpers import do_file_info
+    return await do_file_info(ctx.deps.sandbox, file_path)
+
+
+async def strings_search(ctx: RunContext[SolverDeps], file_path: str, min_len: int = 6, filter_pattern: str = "") -> str:
+    """Extract printable strings from a binary or data file with optional keyword filtering."""
+    from backend.tools.ctf_helpers import do_strings_search
+    return await do_strings_search(ctx.deps.sandbox, file_path, min_len, filter_pattern)
+
+

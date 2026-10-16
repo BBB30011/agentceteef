@@ -77,6 +77,40 @@ async def do_find_flags_in_workspace(sandbox: Any, directory: str = "/challenge"
     return f"Discovered potential flag candidates:\n{out}"
 
 
+async def do_file_info(sandbox: Any, file_path: str) -> str:
+    """Inspect true file type, mime-type, size, and header bytes to detect disguised formats."""
+    safe_path = shlex.quote(file_path)
+    cmd = (
+        f"file -b {safe_path} 2>/dev/null; "
+        f"file --mime-type -b {safe_path} 2>/dev/null; "
+        f"ls -lh {safe_path} 2>/dev/null; "
+        f"(head -c 32 {safe_path} | xxd -p 2>/dev/null || true)"
+    )
+    res = await sandbox.exec(cmd, timeout_s=15)
+    out = res.stdout.strip()
+    if not out:
+        return f"Could not inspect file {file_path}. {res.stderr.strip()}"
+    return f"=== File Inspection: {file_path} ===\n{out}"
+
+
+async def do_strings_search(sandbox: Any, file_path: str, min_len: int = 6, filter_pattern: str = "") -> str:
+    """Extract printable strings from binary/data file with optional keyword filtering."""
+    safe_path = shlex.quote(file_path)
+    min_len = max(3, min(min_len, 64))
+    if filter_pattern:
+        safe_filt = shlex.quote(filter_pattern)
+        cmd = f"strings -n {min_len} {safe_path} 2>/dev/null | grep -iE {safe_filt} | head -n 40"
+    else:
+        cmd = f"strings -n {min_len} {safe_path} 2>/dev/null | head -n 60"
+    res = await sandbox.exec(cmd, timeout_s=20)
+    out = res.stdout.strip()
+    if not out:
+        return f"No matching strings found in {file_path} (min_length={min_len})."
+    flags = extract_flag_candidates(out)
+    flag_line = f"🚩 POTENTIAL FLAGS DISCOVERED: {', '.join(flags)}\n\n" if flags else ""
+    return f"=== Strings Extraction ({file_path}) ===\n{flag_line}{out}"
+
+
 def do_quick_decode(text: str, operation: str) -> str:
     """Quickly decode or convert encoded strings (base64, hex, rot13, url)."""
     text = text.strip()

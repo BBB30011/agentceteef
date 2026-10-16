@@ -1,0 +1,6 @@
+[CONFIDENTIAL INTEL DATA]
+Transmission ID: #88219-ALPHA
+File type disguise applied: extension changed from .txt to .png to bypass network filters.
+Payload Content:
+flag{file_inspection_and_strings_reveal_all_secrets}
+Status: Intercepted

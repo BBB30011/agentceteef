@@ -1,0 +1,12 @@
+name: rev_vault
+category: rev
+value: 100
+description: |
+  A digital vault protected by a Python verification function.
+  Reverse-engineer the verification logic in distfiles/vault.py to extract the correct flag key.
+tags:
+  - reverse-engineering
+  - python
+  - keygen
+hints:
+  - content: Read distfiles/vault.py and analyze the check_key function.

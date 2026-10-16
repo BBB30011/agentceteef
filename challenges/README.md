@@ -55,4 +55,6 @@ hints:
 
 ## 📦 Contoh Tantangan Bawaan:
 - **`demo_sanity/`**: Tantangan verifikasi dasar (*warm-up*) untuk memastikan sandbox dan pipeline ekstraksi flag bekerja normal.
-- **`crypto_cascade/`**: Tantangan kriptografi multi-layer encoding untuk menguji fitur *cascade auto-decoder*.
+- **`crypto_cascade/`**: Tantangan kriptografi multi-layer encoding (`ROT13 + Base64`) untuk menguji fitur *cascade auto-decoder*.
+- **`forensics_disguise/`**: Tantangan forensik berkas terselubung (`avatar.png` yang sebenarnya file teks) untuk menguji `file_info` dan `strings_search`.
+- **`rev_vault/`**: Tantangan reverse engineering logika verifikasi Python (`vault.py`) untuk menguji ekstraksi kunci algoritmis.

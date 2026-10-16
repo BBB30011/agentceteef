@@ -1,0 +1,12 @@
+name: forensics_disguise
+category: forensics
+value: 100
+description: |
+  A suspicious transmission was intercepted named 'avatar.png'.
+  Inspect the true file format, headers, and strings to recover the flag.
+tags:
+  - forensics
+  - magic-bytes
+  - strings
+hints:
+  - content: Use file_info or strings_search to inspect what the file really contains.
