@@ -2,13 +2,26 @@
 
 help:
 	@echo "CTF Agent Swarm Makefile"
+	@echo "  make run            - Run interactive CLI launcher wizard"
+	@echo "  make tokenless      - Run tokenless solver using Antigravity CLI"
+	@echo "  make fast           - Run high-throughput fast multi-model swarm"
 	@echo "  make setup          - Run setup script and prepare environment"
 	@echo "  make install        - Sync dependencies with uv"
 	@echo "  make test           - Run pytest test suite"
 	@echo "  make lint           - Run ruff linter check"
 	@echo "  make build-sandbox  - Build Docker ctf-sandbox image"
 	@echo "  make report         - Show solve statistics from SQLite state DB"
+	@echo "  make report-html    - Generate standalone dark mode HTML report"
 	@echo "  make clean          - Clean temporary caches and logs"
+
+run:
+	./run.sh
+
+tokenless:
+	uv run --offline ctf-solve --profile tokenless 2>/dev/null || uv run ctf-solve --profile tokenless
+
+fast:
+	uv run --offline ctf-solve --profile fast 2>/dev/null || uv run ctf-solve --profile fast
 
 setup:
 	./setup.sh
@@ -27,6 +40,9 @@ build-sandbox:
 
 report:
 	uv run --offline ctf-solve --report 2>/dev/null || uv run ctf-solve --report
+
+report-html:
+	uv run --offline ctf-solve --export-html ctf_report.html 2>/dev/null || uv run ctf-solve --export-html ctf_report.html
 
 clean:
 	rm -rf .pytest_cache .ruff_cache build dist *.egg-info

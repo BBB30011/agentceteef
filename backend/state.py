@@ -164,6 +164,18 @@ class StateManager:
             "solves": solves_list,
         }
 
+    def get_solved(self) -> list[dict[str, Any]]:
+        """Return list of all solved challenge records."""
+        with self._get_conn() as conn:
+            rows = conn.execute("SELECT * FROM challenges WHERE status='solved' ORDER BY solve_time ASC, name ASC").fetchall()
+            return [dict(r) for r in rows]
+
+    def get_recent_submissions(self, limit: int = 50) -> list[dict[str, Any]]:
+        """Return list of recent flag submissions."""
+        with self._get_conn() as conn:
+            rows = conn.execute("SELECT * FROM submissions ORDER BY timestamp DESC LIMIT ?", (limit,)).fetchall()
+            return [dict(r) for r in rows]
+
     def generate_markdown_report(self) -> str:
         """Format a clean markdown report of competition achievements."""
         summary = self.export_summary()

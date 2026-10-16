@@ -12,13 +12,25 @@ import click
 from rich.box import ROUNDED
 from rich.console import Console
 from rich.panel import Panel
-from rich.table import Table
 
 from backend.config import Settings
 from backend.models import auto_detect_default_models
 from backend.state import StateManager
+from backend.ui.dashboard import (
+    print_challenge_unsolved_banner,
+    print_flag_captured_banner,
+    print_welcome_banner,
+)
+from backend.ui.exporter import export_report_to_file
 
 console = Console()
+
+PROFILES: dict[str, tuple[list[str], str]] = {
+    "tokenless": (["agy/default"], "local"),
+    "fast": (["google/gemini-2.0-flash", "groq/llama-3.3-70b-versatile"], "auto"),
+    "smart": (["google/gemini-2.5-pro", "openai/gpt-4o", "anthropic/claude-3-7-sonnet-latest"], "auto"),
+    "deep": (["google/gemini-2.5-pro", "openai/o3-mini", "anthropic/claude-3-7-sonnet-latest"], "auto"),
+}
 
 
 def _setup_logging(verbose: bool = False) -> None:
@@ -34,6 +46,8 @@ def _setup_logging(verbose: bool = False) -> None:
 
 
 @click.command()
+@click.option("--profile", "-p", type=click.Choice(["tokenless", "fast", "smart", "deep", "auto"]), default=None, help="Execution preset profile")
+@click.option("--interactive", "-i", is_flag=True, help="Launch interactive terminal launcher wizard")
 @click.option("--ctfd-url", default=None, help="CTFd URL (overrides .env)")
 @click.option("--ctfd-token", default=None, help="CTFd API token (overrides .env)")
 @click.option("--image", default="ctf-sandbox", help="Docker sandbox image name")
@@ -48,8 +62,11 @@ def _setup_logging(verbose: bool = False) -> None:
 @click.option("--max-challenges", default=10, type=int, help="Max challenges solved concurrently")
 @click.option("--msg-port", default=0, type=int, help="Operator message port (0 = auto)")
 @click.option("--report", is_flag=True, help="Print solve report from state DB and exit")
+@click.option("--export-html", default=None, help="Export competition report to a standalone HTML file")
 @click.option("-v", "--verbose", is_flag=True, help="Verbose logging")
 def main(
+    profile: str | None,
+    interactive: bool,
     ctfd_url: str | None,
     ctfd_token: str | None,
     image: str,
@@ -64,6 +81,7 @@ def main(
     max_challenges: int,
     msg_port: int,
     report: bool,
+    export_html: str | None,
     verbose: bool,
 ) -> None:
     """CTF Agent — Multi-Model Solver Swarm for CTF Competitions."""
@@ -78,28 +96,48 @@ def main(
 
     state_mgr = StateManager(settings.state_db_path)
 
+    if export_html:
+        out_path = export_report_to_file(state_mgr, export_html)
+        console.print(f"[bold green]✓ Laporan HTML kompetisi berhasil diekspor ke:[/bold green] [underline]{out_path}[/underline]")
+        return
+
     if report:
         console.print(Panel(state_mgr.generate_markdown_report(), title="CTF Competition Report", box=ROUNDED))
         return
 
+    # Check interactive mode
+    if interactive:
+        from backend.ui.menu import run_interactive_menu
+        opts = run_interactive_menu(settings)
+        if "profile" in opts:
+            profile = str(opts["profile"])
+        if "challenge" in opts:
+            challenge = str(opts["challenge"])
+        if "models" in opts and opts["models"]:
+            models = tuple(opts["models"])  # type: ignore[assignment]
+        if "sandbox_mode" in opts:
+            sandbox_mode = str(opts["sandbox_mode"])
+            settings.sandbox_mode = sandbox_mode
+
+    # Apply preset profile
+    if profile and profile in PROFILES:
+        prof_models, prof_sandbox = PROFILES[profile]
+        if not models:
+            models = tuple(prof_models)
+        if sandbox_mode == "auto":
+            sandbox_mode = prof_sandbox
+            settings.sandbox_mode = prof_sandbox
+
     model_specs = list(models) if models else auto_detect_default_models(settings)
 
-    # Header Panel
-    table = Table(show_header=False, box=None, padding=(0, 1))
-    table.add_row("[bold cyan]CTFd Target:[/bold cyan]", settings.ctfd_url)
-    table.add_row("[bold cyan]Active Models:[/bold cyan]", ", ".join(model_specs))
-    table.add_row("[bold cyan]Sandbox Mode:[/bold cyan]", f"{sandbox_mode} (Image: {settings.sandbox_image})")
-    table.add_row("[bold cyan]Coordinator:[/bold cyan]", f"{coordinator} (Model: {coordinator_model or 'auto'})")
-    table.add_row("[bold cyan]Max Concurrency:[/bold cyan]", str(max_challenges))
-    table.add_row("[bold cyan]State DB:[/bold cyan]", settings.state_db_path)
-
-    console.print(
-        Panel(
-            table,
-            title="[bold green]🏆 CTF Agent Swarm v0.2.0[/bold green]",
-            subtitle="Autonomous Security Reasoning Agent",
-            box=ROUNDED,
-        )
+    print_welcome_banner(
+        ctfd_url=settings.ctfd_url,
+        models=model_specs,
+        sandbox_mode=sandbox_mode,
+        coordinator=coordinator,
+        max_concurrency=max_challenges,
+        db_path=settings.state_db_path,
+        profile_name=profile,
     )
 
     if challenge:
@@ -177,17 +215,18 @@ async def _run_single(
         elapsed = time.time() - start_time
         console.print()
         if result and result.flag:
-            winner = swarm.winner.log_path if swarm.winner else "unknown"
+            winner = getattr(swarm.winner, "model_spec", "solver") if swarm.winner else "solver"
             state_mgr.mark_solved(meta.name, result.flag, winner, solve_time=elapsed)
-            console.print(
-                Panel(
-                    f"[bold green]FLAG CAPTURED in {elapsed:.1f}s:[/bold green] [bold yellow]{result.flag}[/bold yellow]",
-                    title="🎉 Solve Complete",
-                    box=ROUNDED,
-                )
+            print_flag_captured_banner(
+                challenge_name=meta.name,
+                flag=result.flag,
+                winner_model=winner,
+                elapsed_s=elapsed,
+                category=meta.category,
+                points=meta.value,
             )
         else:
-            console.print(f"[bold red]Challenge unsolved after {elapsed:.1f}s.[/bold red]")
+            print_challenge_unsolved_banner(meta.name, elapsed)
 
         console.print("\n[bold]Model Costs & Usage:[/bold]")
         for agent_name in cost_tracker.by_agent:

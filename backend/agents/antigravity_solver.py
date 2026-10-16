@@ -149,14 +149,92 @@ class AntigravitySolver:
                 cwd=workspace_run_dir,
             )
 
-            stdout_bytes, stderr_bytes = await asyncio.wait_for(
-                proc.communicate(),
-                timeout=600,  # 10 minutes turn limit
-            )
+            stdout_chunks: list[str] = []
+            stderr_chunks: list[str] = []
+            early_flag_result: SolverResult | None = None
 
-            stdout_str = stdout_bytes.decode("utf-8", errors="replace")
-            stderr_str = stderr_bytes.decode("utf-8", errors="replace")
-            output_combined = stdout_str + "\n" + stderr_str
+            async def handle_stream(stream: Any, chunks: list[str]) -> None:
+                nonlocal early_flag_result
+                if stream is None:
+                    return
+                while not stream.at_eof() and not self.cancel_event.is_set():
+                    try:
+                        line_bytes = await stream.readline()
+                    except Exception:
+                        break
+                    if not line_bytes:
+                        break
+                    line = line_bytes.decode("utf-8", errors="replace")
+                    chunks.append(line)
+
+                    # Real-time early flag check
+                    for cand in extract_flag_candidates(line):
+                        logger.info("[%s] Real-time flag detected: %s", self.agent_name, cand)
+                        if self.submit_fn:
+                            res = self.submit_fn(cand)
+                            display, is_confirmed = await res if asyncio.iscoroutine(res) else res
+                            if is_confirmed:
+                                self._confirmed_flag = cand
+                                self.tracer.event("flag_confirmed", flag=cand, step=self._step_count)
+                                early_flag_result = SolverResult(
+                                    flag=cand,
+                                    status=FLAG_FOUND,
+                                    findings_summary=f"Flag confirmed (real-time): {cand} ({display})",
+                                    step_count=self._step_count,
+                                    cost_usd=0.0,
+                                    log_path=self.tracer.path,
+                                )
+                                try:
+                                    proc.terminate()
+                                except Exception:
+                                    pass
+                                return
+                        elif self.no_submit or not self.ctfd:
+                            self._confirmed_flag = cand
+                            self.tracer.event("flag_found_dry_run", flag=cand, step=self._step_count)
+                            early_flag_result = SolverResult(
+                                flag=cand,
+                                status=FLAG_FOUND,
+                                findings_summary=f"Flag candidate found (real-time dry run): {cand}",
+                                step_count=self._step_count,
+                                cost_usd=0.0,
+                                log_path=self.tracer.path,
+                            )
+                            try:
+                                proc.terminate()
+                            except Exception:
+                                pass
+                            return
+
+            # Read via real-time stream if available, otherwise communicate()
+            is_mock = hasattr(proc, "communicate") and getattr(proc.communicate, "return_value", None) is not None
+            if hasattr(proc.stdout, "readline") and not is_mock:
+                try:
+                    await asyncio.wait_for(
+                        asyncio.gather(
+                            handle_stream(proc.stdout, stdout_chunks),
+                            handle_stream(proc.stderr, stderr_chunks),
+                        ),
+                        timeout=600,
+                    )
+                    await proc.wait()
+                except TimeoutError:
+                    try:
+                        proc.kill()
+                    except Exception:
+                        pass
+                output_combined = "".join(stdout_chunks) + "\n" + "".join(stderr_chunks)
+            else:
+                stdout_bytes, stderr_bytes = await asyncio.wait_for(
+                    proc.communicate(),
+                    timeout=600,
+                )
+                output_combined = (
+                    stdout_bytes.decode("utf-8", errors="replace") + "\n" + stderr_bytes.decode("utf-8", errors="replace")
+                )
+
+            if early_flag_result:
+                return early_flag_result
 
             self.tracer.event("model_output", output=output_combined[:2000], step=self._step_count)
 

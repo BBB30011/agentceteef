@@ -106,3 +106,18 @@ async def find_flags(ctx: RunContext[SolverDeps], path: str = "/challenge") -> s
     from backend.tools.ctf_helpers import do_find_flags_in_workspace
     return await do_find_flags_in_workspace(ctx.deps.sandbox, path)
 
+
+async def auto_decode(ctx: RunContext[SolverDeps], text: str) -> str:
+    """Automatically attempt multi-format decoding (b64, hex, b32, rot13, url, binary) and detect flags."""
+    from backend.tools.ctf_helpers import do_auto_decode
+    return do_auto_decode(text)
+
+
+async def calculate_entropy(ctx: RunContext[SolverDeps], data: str) -> str:
+    """Calculate Shannon entropy (0-8) of text or hex bytes to detect encryption or compression."""
+    from backend.tools.ctf_helpers import do_entropy
+    score = do_entropy(data)
+    assessment = "likely plain text/code" if score < 4.5 else ("moderate structure" if score < 6.5 else "high entropy (likely encrypted/compressed)")
+    return f"Entropy: {score} / 8.0 — {assessment}"
+
+

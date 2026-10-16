@@ -31,7 +31,9 @@ from backend.sandbox import DockerSandbox
 from backend.solver_base import CANCELLED, CORRECT_MARKERS, ERROR, FLAG_FOUND, GAVE_UP, SolverResult
 from backend.tools.flag import submit_flag
 from backend.tools.sandbox import (
+    auto_decode,
     bash,
+    calculate_entropy,
     check_findings,
     checksec,
     decompile,
@@ -108,7 +110,9 @@ def _build_toolset(deps: SolverDeps) -> FunctionToolset[SolverDeps]:
         submit_flag,
         checksec,
         decompile,
+        auto_decode,
         quick_decode,
+        calculate_entropy,
         find_flags,
         web_fetch,
         webhook_create,
