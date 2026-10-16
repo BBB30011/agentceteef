@@ -109,9 +109,24 @@ class ChallengeSwarm:
                 submit_fn=_submit_fn,
                 message_bus=self.message_bus,
                 notify_coordinator=_notify,
+        if provider in ("agy", "antigravity"):
+            from backend.agents.antigravity_solver import AntigravitySolver
+            return AntigravitySolver(
+                model_spec=model_spec,
+                challenge_dir=self.challenge_dir,
+                meta=self.meta,
+                ctfd=self.ctfd,
+                cost_tracker=self.cost_tracker,
+                settings=self.settings,
+                cancel_event=self.cancel_event,
+                no_submit=self.no_submit,
+                submit_fn=_submit_fn,
+                message_bus=self.message_bus,
+                notify_coordinator=_notify,
             )
 
         return self._create_pydantic_solver(model_spec)
+
 
     def _make_notify_fn(self, model_spec: str):
         """Create a callback that pushes solver messages to the coordinator inbox."""

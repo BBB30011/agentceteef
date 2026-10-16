@@ -132,11 +132,17 @@ def auto_detect_default_models(settings: Settings) -> list[str]:
     if settings.opencode_zen_api_key:
         models.append("zen/gpt-5.3-codex-spark")
 
+    # Antigravity CLI (Tokenless Host Execution)
+    import shutil
+    if shutil.which("agy") or Path("/home/kali/.local/bin/agy").exists():
+        models.append("agy/default")
+
     # If nothing detected, return original default models (may rely on claude-sdk or codex cli)
     if not models:
         return list(DEFAULT_MODELS)
 
     return models
+
 
 
 def resolve_model(spec: str, settings: Settings) -> Model:
@@ -249,11 +255,12 @@ def resolve_model(spec: str, settings: Settings) -> Model:
                     provider=BedrockProvider(bedrock_client=client),
                 )
 
-        case "claude-sdk" | "codex":
+        case "claude-sdk" | "codex" | "agy" | "antigravity":
             raise ValueError(
                 f"Provider '{provider}' uses its own native runner backend, not Pydantic AI. "
                 f"resolve_model() should not be called for {spec}."
             )
+
 
         case _:
             # Fallback to OpenAI-compatible provider if unrecognized
